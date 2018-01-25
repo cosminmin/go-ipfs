@@ -137,6 +137,16 @@ You can now check what blocks have been created by:
 			req.Options[progressOptionName] = true
 		}
 
+		// TODO(frrist): this means no progress bar will be given if an
+		// encoding other than text is used. Currently progress bar reporting
+		// is handled as a special case for the add command. We should
+		// see if the progress bar stuff can be generalized a bit more, as this
+		// is a bit painful as is.
+		encoding, found := req.Options[cmds.EncLong]
+		if found && encoding != cmds.Text {
+			req.Options[progressOptionName] = false
+		}
+
 		return nil
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) {
@@ -344,6 +354,10 @@ You can now check what blocks have been created by:
 	},
 	PostRun: cmds.PostRunMap{
 		cmds.CLI: func(req *cmds.Request, re cmds.ResponseEmitter) cmds.ResponseEmitter {
+			v, found := req.Options["encoding"]
+			if found && v != cmds.Text {
+				return re
+			}
 			reNext, res := cmds.NewChanResponsePair(req)
 			outChan := make(chan interface{})
 
@@ -486,6 +500,11 @@ You can now check what blocks have been created by:
 
 			return reNext
 		},
+	},
+	Encoders: cmds.EncoderMap{
+		cmds.Text: cmds.MakeEncoder(func(req *cmds.Request, w io.Writer, v interface{}) error {
+			return nil
+		}),
 	},
 	Type: coreunix.AddedObject{},
 }
