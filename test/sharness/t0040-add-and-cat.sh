@@ -29,6 +29,17 @@ test_add_cat_file() {
     test_cmp expected actual
   '
 
+  test_expect_success "ipfs add succeeds (json encoded)" '
+    echo "Hello Worlds!" >mountdir/hello.txt &&
+    ipfs add -enc=json mountdir/hello.txt >actualJson
+  '
+
+  json_add='{"Name":"hello.txt","Hash":"QmVr26fY1tKyspEJBniVhqxQeEjhF78XerGiqWAwraVLQH","Size":"22"}'
+  test_expect_success "ipfs add output looks good (json encoded)" '
+    echo $json_add >expectedJson &&
+    test_cmp expectedJson actualJson
+  '
+
   test_expect_success "ipfs add --only-hash succeeds" '
     ipfs add --only-hash mountdir/hello.txt > oh_actual
   '
@@ -146,6 +157,16 @@ test_add_cat_file() {
     test_cmp expected actual
   '
 
+  test_expect_success "ipfs add -t succeeds (json encoded)" '
+    ipfs add -enc=json -t mountdir/hello.txt >actualJson
+  '
+
+  json_add_t='{"Name":"hello.txt","Hash":"QmUkUQgxXeggyaD5Ckv8ZqfW8wHBX6cYyeiyqvVZYzq5Bi","Size":"72"}'
+  test_expect_success "ipfs add -t output looks good (json encoded)" '
+    echo $json_add_t >expectedJson &&
+    test_cmp expectedJson actualJson
+  '
+
   test_expect_success "ipfs add --chunker size-32 succeeds" '
     ipfs add --chunker rabin mountdir/hello.txt >actual
   '
@@ -165,6 +186,17 @@ test_add_cat_file() {
     HASH="QmVr26fY1tKyspEJBniVhqxQeEjhF78XerGiqWAwraVLQH" &&
     echo "added $HASH .hello.txt" >expected &&
     test_cmp expected actual
+  '
+
+  json_add_h='{"Name":".hello.txt","Hash":"QmVr26fY1tKyspEJBniVhqxQeEjhF78XerGiqWAwraVLQH","Size":"22"}'
+  test_expect_success "ipfs add on hidden file succeeds (json encoded)" '
+    echo "Hello Worlds!" >mountdir/.hello.txt &&
+    ipfs add -enc=json mountdir/.hello.txt >actualJson
+  '
+
+  test_expect_success "ipfs add on hidden file output looks good (json encoded)" '
+    echo $json_add_h >expectedJson &&
+    test_cmp expectedJson actualJson
   '
 }
 

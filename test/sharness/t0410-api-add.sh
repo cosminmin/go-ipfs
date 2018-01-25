@@ -16,6 +16,11 @@ test_launch_ipfs_daemon
 test_expect_success "API Add response includes size field" '
   echo "hi" | curl -s -F file=@- "http://localhost:$API_PORT/api/v0/add" | grep "\"Size\": *\"11\""
 '
+
+test_expect_success "API Add response includes size field with XML encoding" '
+  echo "hi" | curl -s -F file=@- "http://localhost:$API_PORT/api/v0/add?encoding=xml" | grep "<Size>11</Size>"
+'
+
 test_kill_ipfs_daemon
 
 test_done

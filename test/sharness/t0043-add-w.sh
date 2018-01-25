@@ -53,6 +53,46 @@ added QmTmc46fhKC8Liuh5soy1VotdnHcqLu3r6HpPGwDZCnqL1 '
 
 add_w_r='QmcCksBMDuuyuyfAMMNzEAx6Z7jTrdRy9a23WpufAhG9ji'
 
+add_w_json_1='{"Name":"4r93","Hash":"Qme987pqNBhZZXy4ckeXiR7zaRQwBabB7fTgHurW2yJfNu","Size":"2280"}
+{"Name":"","Hash":"Qmf82PSsMpUHcrqxa69KG6Qp5yeK7K9BTizXgG3nvzWcNG","Size":"2331"}'
+
+add_w_json_12='{"Name":"4r93","Hash":"Qme987pqNBhZZXy4ckeXiR7zaRQwBabB7fTgHurW2yJfNu","Size":"2280"}
+{"Name":"4u6ead","Hash":"QmVb4ntSZZnT2J2zvCmXKMJc52cmZYH6AB37MzeYewnkjs","Size":"2976"}
+{"Name":"","Hash":"QmZPASVB6EsADrLN8S2sak34zEHL8mx4TAVsPJU9cNnQQJ","Size":"5356"}'
+
+add_w_json_d1='{"Name":"_jo7/-s782qgs","Hash":"QmPcaX84tDiTfzdTn8GQxexodgeWH6mHjSss5Zfr5ojssb","Size":"3963"}
+{"Name":"_jo7/15totauzkak-","Hash":"QmaVBqquUuXKjkyWHXaXfsaQUxAnsCKS95VRDHU8PzGA4K","Size":"2746"}
+{"Name":"_jo7/galecuirrj4r","Hash":"QmaAHFG8cmhW3WLjofx5siSp44VV25ETN6ThzrU8iAqpkR","Size":"811"}
+{"Name":"_jo7/mzo50r-1xidf5zx","Hash":"QmeuSfhJNKwBESp1W9H8cfoMdBfW3AeHQDWXbNXQJYWp53","Size":"1022"}
+{"Name":"_jo7/wzvsihy","Hash":"QmYC3u5jGWuyFwvTxtvLYm2K3SpWZ31tg3NjpVVvh9cJaJ","Size":"3875"}
+{"Name":"_jo7","Hash":"QmQkib3f9XNX5sj6WEahLUPFpheTcwSRJwUCSvjcv8b9by","Size":"12690"}
+{"Name":"","Hash":"QmNQoesMj1qp8ApE51NbtTjFYksyzkezPD4cat7V2kzbKN","Size":"12741"}'
+
+add_w_json_d1_v1='{"Name":"_jo7/-s782qgs","Hash":"zb2rhjXyHbbgwgtAUwHtpBd8iXLgK22ZjVmaiJSMNmqBTpXS3","Size":"3952"}
+{"Name":"_jo7/15totauzkak-","Hash":"zb2rhi6PQqQFbS4QsvrV8sL9ue1fvFoqtLVqogNPCZri8rquN","Size":"2735"}
+{"Name":"_jo7/galecuirrj4r","Hash":"zb2rhjQthC6LgnNZztpsF9LcfPxznh3cJnmzUx8dnSqNqJ8Yz","Size":"800"}
+{"Name":"_jo7/mzo50r-1xidf5zx","Hash":"zb2rhYh9hgDw1DpaZfLUU5MkKNezPWjPTkgGQPiTyLpZYu3jn","Size":"1011"}
+{"Name":"_jo7/wzvsihy","Hash":"zb2rhZK5xwEUhY4uskfj4sn979aCH27cnqseVVznYDn7NFWtt","Size":"3864"}
+{"Name":"_jo7","Hash":"zdj7WfNC8EZchqskczxsgrVEqwLVpksQ9B5kopf391jVbCGwv","Size":"12645"}
+{"Name":"","Hash":"zdj7Wn5jf686mfYE8gUKWzY7aTjp5eAQcecD8q4ZtqLJbDNxe","Size":"12698"}'
+
+add_w_json_d2='{"Name":"4r93","Hash":"Qme987pqNBhZZXy4ckeXiR7zaRQwBabB7fTgHurW2yJfNu","Size":"2280"}
+{"Name":"gnz66h/1k0xpx34","Hash":"QmU9Jqks8TPu4vFr6t7EKkAKQrSJuEujNj1AkzoCeTEDFJ","Size":"446"}
+{"Name":"gnz66h/9cwudvacx","Hash":"QmSLYZycXAufRw3ePMVH2brbtYWCcWsmksGLbHcT8ia9Ke","Size":"2034"}
+{"Name":"gnz66h/9ximv51cbo8","Hash":"QmfYmpCCAMU9nLe7xbrYsHf5z2R2GxeQnsm4zavUhX9vq2","Size":"3402"}
+{"Name":"gnz66h/b54ygh6gs","Hash":"QmWgEE4e2kfx3b8HZcBk5cLrfhoi8kTMQP2MipgPhykuV3","Size":"2628"}
+{"Name":"gnz66h/lbl5","Hash":"QmcLbqEqhREGednc6mrVtanee4WHKp5JnUfiwTTHCJwuDf","Size":"1447"}
+{"Name":"_jo7/-s782qgs","Hash":"QmPcaX84tDiTfzdTn8GQxexodgeWH6mHjSss5Zfr5ojssb","Size":"3963"}
+{"Name":"_jo7/15totauzkak-","Hash":"QmaVBqquUuXKjkyWHXaXfsaQUxAnsCKS95VRDHU8PzGA4K","Size":"2746"}
+{"Name":"_jo7/galecuirrj4r","Hash":"QmaAHFG8cmhW3WLjofx5siSp44VV25ETN6ThzrU8iAqpkR","Size":"811"}
+{"Name":"_jo7/mzo50r-1xidf5zx","Hash":"QmeuSfhJNKwBESp1W9H8cfoMdBfW3AeHQDWXbNXQJYWp53","Size":"1022"}
+{"Name":"_jo7/wzvsihy","Hash":"QmYC3u5jGWuyFwvTxtvLYm2K3SpWZ31tg3NjpVVvh9cJaJ","Size":"3875"}
+{"Name":"h3qpecj0","Hash":"QmVaKAt2eVftNKFfKhiBV7Mu5HjCugffuLqWqobSSFgiA7","Size":"395"}
+{"Name":"_jo7","Hash":"QmQkib3f9XNX5sj6WEahLUPFpheTcwSRJwUCSvjcv8b9by","Size":"12690"}
+{"Name":"gnz66h","Hash":"QmVPwNy8pZegpsNmsjjZvdTQn4uCeuZgtzhgWhRSQWjK9x","Size":"10217"}
+{"Name":"","Hash":"QmTmc46fhKC8Liuh5soy1VotdnHcqLu3r6HpPGwDZCnqL1","Size":"25780"}'
+
+
 . lib/test-lib.sh
 
 test_add_w() {
@@ -149,6 +189,59 @@ test_add_w() {
     echo "$add_w_d1_v1" >expected &&
     test_sort_cmp expected actual
   '
+
+## Same test with json encoding
+
+  # test single file with json encoding
+  test_expect_success "ipfs add -w -enc=json (single file) succeeds" '
+    ipfs add -w -enc=json m/4r93 >actualJson
+  '
+
+  test_expect_success "ipfs add -w -enc=json (single file) is correct" '
+    echo "$add_w_json_1" >expectedJson &&
+    test_sort_cmp expectedJson actualJson
+  '
+
+  # test two files together with json encoding
+  test_expect_success "ipfs add -w -enc=json (multiple) succeeds" '
+    ipfs add -w -enc=json m/4r93 m/4u6ead >actualJson
+  '
+
+  test_expect_success "ipfs add -w -enc=json (multiple) is correct" '
+    echo "$add_w_json_12" >expectedJson  &&
+    test_sort_cmp expectedJson actualJson
+  '
+
+  # test a directory with json encoding
+  test_expect_success "ipfs add -w -enc=json -r (dir) succeeds" '
+    ipfs add -r -enc=json -w m/t_1wp-8a2/_jo7 >actualJson
+  '
+
+  test_expect_success "ipfs add -w -enc=json -r (dir) is correct" '
+    echo "$add_w_json_d1" >expectedJson &&
+    test_sort_cmp expectedJson actualJson
+  '
+
+  # test files and directory with json encoding
+  test_expect_success "ipfs add -w -enc=json -r <many> succeeds" '
+    ipfs add -w -enc=json -r m/t_1wp-8a2/h3qpecj0 \
+      m/ha6f0x7su6/gnz66h m/t_1wp-8a2/_jo7 m/4r93 >actualJson
+  '
+
+  test_expect_success "ipfs add -w -enc=json -r <many> is correct" '
+    echo "$add_w_json_d2" >expectedJson &&
+    test_sort_cmp expectedJson actualJson
+  '
+
+  test_expect_success "ipfs add -w -enc=json -r (dir) --cid-version=1 succeeds" '
+    ipfs add -r -w -enc=json --cid-version=1 m/t_1wp-8a2/_jo7 >actualJson
+  '
+
+  test_expect_success "ipfs add -w -enc=json -r (dir) --cid-version=1 is correct" '
+    echo "$add_w_json_d1_v1" >expectedJson &&
+    test_sort_cmp expectedJson actualJson
+  '
+
 }
 
 test_init_ipfs
