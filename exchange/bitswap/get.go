@@ -6,6 +6,7 @@ import (
 
 	blockstore "github.com/ipfs/go-ipfs/blocks/blockstore"
 	notifications "github.com/ipfs/go-ipfs/exchange/bitswap/notifications"
+	logging "gx/ipfs/QmSpJByNKFX1sCsHBEp3R73FL4NF6FnQTEGyNAXHm2GS52/go-log"
 	blocks "gx/ipfs/Qmej7nf81hi2x2tvjRBF3mcp74sQyuDH4VMYDGd1YtXjb2/go-block-format"
 
 	cid "gx/ipfs/QmcZfnkapfECQGcLZaf9B79NRg7cRa9EnZh4LSbkCzwNvY/go-cid"
@@ -79,6 +80,7 @@ func handleIncoming(ctx context.Context, remaining *cid.Set, in <-chan blocks.Bl
 		close(out)
 		// can't just defer this call on its own, arguments are resolved *when* the defer is created
 		cfun(remaining.Keys())
+		logging.MaybeFinishEvent(ctx)
 	}()
 	for {
 		select {

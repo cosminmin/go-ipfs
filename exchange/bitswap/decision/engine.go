@@ -65,6 +65,13 @@ type Envelope struct {
 	Sent func()
 }
 
+func (e *Envelope) Loggable() map[string]interface{} {
+	return logging.LoggableMap{
+		"Peer":  e.Peer.Pretty(),
+		"Block": e.Block.String(),
+	}
+}
+
 type Engine struct {
 	// peerRequestQueue is a priority queue of requests received from peers.
 	// Requests are popped from the queue, packaged up, and placed in the

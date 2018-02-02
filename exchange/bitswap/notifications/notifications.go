@@ -6,8 +6,11 @@ import (
 	blocks "gx/ipfs/Qmej7nf81hi2x2tvjRBF3mcp74sQyuDH4VMYDGd1YtXjb2/go-block-format"
 
 	pubsub "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/briantigerchow/pubsub"
+	logging "gx/ipfs/QmSpJByNKFX1sCsHBEp3R73FL4NF6FnQTEGyNAXHm2GS52/go-log"
 	cid "gx/ipfs/QmcZfnkapfECQGcLZaf9B79NRg7cRa9EnZh4LSbkCzwNvY/go-cid"
 )
+
+var log = logging.Logger("bitswap/notifications")
 
 const bufferSize = 16
 
@@ -37,17 +40,22 @@ func (ps *impl) Shutdown() {
 // is closed if the |ctx| times out or is cancelled, or after sending len(keys)
 // blocks.
 func (ps *impl) Subscribe(ctx context.Context, keys ...*cid.Cid) <-chan blocks.Block {
-
 	blocksCh := make(chan blocks.Block, len(keys))
 	valuesCh := make(chan interface{}, len(keys)) // provide our own channel to control buffer, prevent blocking
 	if len(keys) == 0 {
 		close(blocksCh)
 		return blocksCh
 	}
-	ps.wrapped.AddSubOnceEach(valuesCh, toStrings(keys)...)
+
+	sKeys := toStrings(keys)
+	ctx = log.EventBeginInContext(ctx, "Bitswap.Subscribe", logging.LoggableMap{"Keys": sKeys})
+	ps.wrapped.AddSubOnceEach(valuesCh, sKeys...)
 	go func() {
-		defer close(blocksCh)
-		defer ps.wrapped.Unsub(valuesCh) // with a len(keys) buffer, this is an optimization
+		defer func() {
+			close(blocksCh)
+			ps.wrapped.Unsub(valuesCh) // with a len(keys) buffer, this is an optimization
+			logging.MaybeFinishEvent(ctx)
+		}()
 		for {
 			select {
 			case <-ctx.Done():

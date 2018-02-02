@@ -185,8 +185,14 @@ type blockRequest struct {
 
 // GetBlock attempts to retrieve a particular block from peers within the
 // deadline enforced by the context.
-func (bs *Bitswap) GetBlock(parent context.Context, k *cid.Cid) (blocks.Block, error) {
-	return getBlock(parent, k, bs.GetBlocks)
+func (bs *Bitswap) GetBlock(parent context.Context, k *cid.Cid) (b blocks.Block, err error) {
+	eip := log.EventBegin(parent, "Bitswap.GetBlock", k)
+	defer func() {
+		eip.Append(b)
+		eip.DoneWithErr(err)
+	}()
+	b, err = getBlock(parent, k, bs.GetBlocks)
+	return b, err
 }
 
 func (bs *Bitswap) WantlistForPeer(p peer.ID) []*cid.Cid {
@@ -220,11 +226,10 @@ func (bs *Bitswap) GetBlocks(ctx context.Context, keys []*cid.Cid) (<-chan block
 		return nil, errors.New("bitswap is closed")
 	default:
 	}
-	promise := bs.notifications.Subscribe(ctx, keys...)
+	//to be completed when the below goroutine completes
+	ctx = log.EventBeginInContext(ctx, "Bitswap.GetBlocks")
 
-	for _, k := range keys {
-		log.Event(ctx, "Bitswap.GetBlockRequest.Start", k)
-	}
+	promise := bs.notifications.Subscribe(ctx, keys...)
 
 	mses := bs.getNextSessionID()
 
@@ -240,6 +245,7 @@ func (bs *Bitswap) GetBlocks(ctx context.Context, keys []*cid.Cid) (<-chan block
 
 	remaining := cid.NewSet()
 	for _, k := range keys {
+		log.Event(ctx, "Bitswap.GetBlocks.Start", k)
 		remaining.Add(k)
 	}
 
@@ -251,6 +257,7 @@ func (bs *Bitswap) GetBlocks(ctx context.Context, keys []*cid.Cid) (<-chan block
 		defer func() {
 			// can't just defer this call on its own, arguments are resolved *when* the defer is created
 			bs.CancelWants(remaining.Keys(), mses)
+			logging.MaybeFinishEvent(ctx)
 		}()
 		for {
 			select {
@@ -292,12 +299,26 @@ func (bs *Bitswap) CancelWants(cids []*cid.Cid, ses uint64) {
 	if len(cids) == 0 {
 		return
 	}
+	defer log.EventBegin(bs.wm.ctx, "Bitswap.CancelWants", logging.LoggableF(func() map[string]interface{} {
+		var wants []string
+		for c := range cids {
+			wants = append(wants, cids[c].KeyString())
+		}
+		return logging.LoggableMap{
+			"Session": ses,
+			"Blocks":  wants,
+		}
+	})).Done()
 	bs.wm.CancelWants(context.Background(), cids, nil, ses)
 }
 
 // HasBlock announces the existance of a block to this bitswap service. The
 // service will potentially notify its peers.
-func (bs *Bitswap) HasBlock(blk blocks.Block) error {
+func (bs *Bitswap) HasBlock(blk blocks.Block) (err error) {
+	eip := log.EventBegin(bs.wm.ctx, "Bitswap.HasBlock", blk)
+	defer func() {
+		eip.DoneWithErr(err)
+	}()
 	return bs.receiveBlockFrom(blk, "")
 }
 
@@ -359,6 +380,10 @@ func (bs *Bitswap) SessionsForBlock(c *cid.Cid) []*Session {
 
 func (bs *Bitswap) ReceiveMessage(ctx context.Context, p peer.ID, incoming bsmsg.BitSwapMessage) {
 	atomic.AddUint64(&bs.counters.messagesRecvd, 1)
+	eip := log.EventBegin(bs.wm.ctx, "Bitswap.ReceiveMessage", p, incoming)
+	defer func() {
+		eip.Done()
+	}()
 
 	// This call records changes to wantlists, blocks received,
 	// and number of bytes transfered.
@@ -420,12 +445,14 @@ func (bs *Bitswap) updateReceiveCounters(b blocks.Block) {
 
 // Connected/Disconnected warns bitswap about peer connections
 func (bs *Bitswap) PeerConnected(p peer.ID) {
+	defer log.EventBegin(bs.wm.ctx, "Bitswap.PeerConnected", p).Done()
 	bs.wm.Connected(p)
 	bs.engine.PeerConnected(p)
 }
 
 // Connected/Disconnected warns bitswap about peer connections
 func (bs *Bitswap) PeerDisconnected(p peer.ID) {
+	defer log.EventBegin(bs.wm.ctx, "Bitswap.PeerDisonnected", p).Done()
 	bs.wm.Disconnected(p)
 	bs.engine.PeerDisconnected(p)
 }

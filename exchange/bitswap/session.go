@@ -302,11 +302,19 @@ func (s *Session) fetch(ctx context.Context, keys []*cid.Cid) {
 // guaranteed on the returned blocks.
 func (s *Session) GetBlocks(ctx context.Context, keys []*cid.Cid) (<-chan blocks.Block, error) {
 	ctx = logging.ContextWithLoggable(ctx, s.uuid)
+
+	//TODO(frrist): This could probably be handled in a cleaner way, might require a slight refactor
+	ctx = log.EventBeginInContext(ctx, "Session.GetBlocks")
+
 	return getBlocksImpl(ctx, keys, s.notif, s.fetch, s.cancelWants)
 }
 
 // GetBlock fetches a single block
-func (s *Session) GetBlock(parent context.Context, k *cid.Cid) (blocks.Block, error) {
+func (s *Session) GetBlock(parent context.Context, k *cid.Cid) (b blocks.Block, err error) {
+	eip := log.EventBegin(parent, "Session.GetBlock", k)
+	defer func() {
+		eip.DoneWithErr(err)
+	}()
 	return getBlock(parent, k, s.GetBlocks)
 }
 

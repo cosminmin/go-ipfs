@@ -11,6 +11,7 @@ import (
 	wantlist "github.com/ipfs/go-ipfs/exchange/bitswap/wantlist"
 
 	metrics "gx/ipfs/QmRg1gKTHzc3CZXSKzem8aR4E3TubFhbgXwfVuWnSK5CC5/go-metrics-interface"
+	logging "gx/ipfs/QmSpJByNKFX1sCsHBEp3R73FL4NF6FnQTEGyNAXHm2GS52/go-log"
 	peer "gx/ipfs/Qma7H6RW8wRrfZpNSXwxYGcd1E149s42FpWNpDNieSVrnU/go-libp2p-peer"
 	cid "gx/ipfs/QmcZfnkapfECQGcLZaf9B79NRg7cRa9EnZh4LSbkCzwNvY/go-cid"
 )
@@ -78,12 +79,43 @@ type msgQueue struct {
 
 // WantBlocks adds the given cids to the wantlist, tracked by the given session
 func (pm *WantManager) WantBlocks(ctx context.Context, ks []*cid.Cid, peers []peer.ID, ses uint64) {
+	defer log.EventBegin(ctx, "WantManager.WantBlocks", logging.LoggableF(func() map[string]interface{} {
+		var wants []string
+		for c := range ks {
+			wants = append(wants, ks[c].KeyString())
+		}
+		var targets []string
+		for p := range peers {
+			targets = append(targets, peers[p].Pretty())
+		}
+		return logging.LoggableMap{
+			"Session": ses,
+			"Blocks":  wants,
+			"Targets": targets,
+		}
+	})).Done()
+
 	log.Infof("want blocks: %s", ks)
 	pm.addEntries(ctx, ks, peers, false, ses)
 }
 
 // CancelWants removes the given cids from the wantlist, tracked by the given session
 func (pm *WantManager) CancelWants(ctx context.Context, ks []*cid.Cid, peers []peer.ID, ses uint64) {
+	defer log.EventBegin(ctx, "WantManager.CancleWants", logging.LoggableF(func() map[string]interface{} {
+		var wants []string
+		for c := range ks {
+			wants = append(wants, ks[c].KeyString())
+		}
+		var targets []string
+		for p := range peers {
+			targets = append(targets, peers[p].Pretty())
+		}
+		return logging.LoggableMap{
+			"Session": ses,
+			"Blocks":  wants,
+			"Targets": targets,
+		}
+	})).Done()
 	pm.addEntries(context.Background(), ks, peers, true, ses)
 }
 
@@ -117,7 +149,11 @@ func (pm *WantManager) ConnectedPeers() []peer.ID {
 func (pm *WantManager) SendBlock(ctx context.Context, env *engine.Envelope) {
 	// Blocks need to be sent synchronously to maintain proper backpressure
 	// throughout the network stack
-	defer env.Sent()
+	eip := log.EventBegin(ctx, "WantManager.SendBlock", env)
+	defer func() {
+		env.Sent()
+		eip.Done()
+	}()
 
 	pm.sentHistogram.Observe(float64(len(env.Block.RawData())))
 
@@ -273,6 +309,7 @@ func (mq *msgQueue) openSender(ctx context.Context) error {
 }
 
 func (pm *WantManager) Connected(p peer.ID) {
+	defer log.EventBegin(pm.ctx, "WantManager.Connected", p).Done()
 	select {
 	case pm.connectEvent <- peerStatus{peer: p, connect: true}:
 	case <-pm.ctx.Done():
@@ -280,6 +317,7 @@ func (pm *WantManager) Connected(p peer.ID) {
 }
 
 func (pm *WantManager) Disconnected(p peer.ID) {
+	defer log.EventBegin(pm.ctx, "WantManager.Disconnected", p).Done()
 	select {
 	case pm.connectEvent <- peerStatus{peer: p, connect: false}:
 	case <-pm.ctx.Done():
