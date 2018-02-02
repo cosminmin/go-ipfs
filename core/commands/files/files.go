@@ -1,4 +1,4 @@
-package commands
+package filescmd
 
 import (
 	"bytes"
@@ -12,9 +12,11 @@ import (
 
 	bservice "github.com/ipfs/go-ipfs/blockservice"
 	oldcmds "github.com/ipfs/go-ipfs/commands"
+
 	lgc "github.com/ipfs/go-ipfs/commands/legacy"
 	core "github.com/ipfs/go-ipfs/core"
 	e "github.com/ipfs/go-ipfs/core/commands/e"
+	u "github.com/ipfs/go-ipfs/core/commands/util"
 	"github.com/ipfs/go-ipfs/exchange/offline"
 	dag "github.com/ipfs/go-ipfs/merkledag"
 	mfs "github.com/ipfs/go-ipfs/mfs"
@@ -111,7 +113,7 @@ var filesStatCmd = &cmds.Command{
 			res.SetError(err, cmdkit.ErrClient)
 		}
 
-		node, err := GetNode(env)
+		node, err := u.GetNode(env)
 		if err != nil {
 			res.SetError(err, cmdkit.ErrNormal)
 			return

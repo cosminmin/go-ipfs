@@ -7,6 +7,7 @@ import (
 	"os"
 
 	core "github.com/ipfs/go-ipfs/core"
+	u "github.com/ipfs/go-ipfs/core/commands/util"
 	coreunix "github.com/ipfs/go-ipfs/core/coreunix"
 
 	cmds "gx/ipfs/QmPq2D7Yoyev7yeMuMnkEYBqmQuUu5kb91UXPPoiik1Xyp/go-ipfs-cmds"
@@ -29,7 +30,7 @@ var CatCmd = &cmds.Command{
 		cmdkit.IntOption("length", "l", "Maximum number of bytes to read."),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) {
-		node, err := GetNode(env)
+		node, err := u.GetNode(env)
 		if err != nil {
 			res.SetError(err, cmdkit.ErrNormal)
 			return

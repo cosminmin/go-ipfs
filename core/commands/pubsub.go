@@ -10,6 +10,7 @@ import (
 	"time"
 
 	core "github.com/ipfs/go-ipfs/core"
+	u "github.com/ipfs/go-ipfs/core/commands/util"
 
 	cmds "gx/ipfs/QmPq2D7Yoyev7yeMuMnkEYBqmQuUu5kb91UXPPoiik1Xyp/go-ipfs-cmds"
 	floodsub "gx/ipfs/QmSjoxpBJV71bpSojnUY1K382Ly3Up55EspnDx6EKAmQX4/go-libp2p-floodsub"
@@ -71,7 +72,7 @@ This command outputs data in the following encodings:
 		cmdkit.BoolOption("discover", "try to discover other peers subscribed to the same topic"),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) {
-		n, err := GetNode(env)
+		n, err := u.GetNode(env)
 		if err != nil {
 			res.SetError(err, cmdkit.ErrNormal)
 			return
@@ -204,7 +205,7 @@ To use, the daemon must be run with '--enable-pubsub-experiment'.
 		cmdkit.StringArg("data", true, true, "Payload of message to publish.").EnableStdin(),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) {
-		n, err := GetNode(env)
+		n, err := u.GetNode(env)
 		if err != nil {
 			res.SetError(err, cmdkit.ErrNormal)
 			return
@@ -245,7 +246,7 @@ To use, the daemon must be run with '--enable-pubsub-experiment'.
 `,
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) {
-		n, err := GetNode(env)
+		n, err := u.GetNode(env)
 		if err != nil {
 			res.SetError(err, cmdkit.ErrNormal)
 			return
@@ -287,7 +288,7 @@ To use, the daemon must be run with '--enable-pubsub-experiment'.
 		cmdkit.StringArg("topic", false, false, "topic to list connected peers of"),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) {
-		n, err := GetNode(env)
+		n, err := u.GetNode(env)
 		if err != nil {
 			res.SetError(err, cmdkit.ErrNormal)
 			return

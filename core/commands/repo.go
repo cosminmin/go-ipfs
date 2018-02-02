@@ -12,6 +12,7 @@ import (
 	bstore "github.com/ipfs/go-ipfs/blocks/blockstore"
 	oldcmds "github.com/ipfs/go-ipfs/commands"
 	e "github.com/ipfs/go-ipfs/core/commands/e"
+	u "github.com/ipfs/go-ipfs/core/commands/util"
 	corerepo "github.com/ipfs/go-ipfs/core/corerepo"
 	config "github.com/ipfs/go-ipfs/repo/config"
 	fsrepo "github.com/ipfs/go-ipfs/repo/fsrepo"
@@ -160,7 +161,7 @@ Version         string The repo version.
 `,
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) {
-		n, err := GetNode(env)
+		n, err := u.GetNode(env)
 		if err != nil {
 			res.SetError(err, cmdkit.ErrNormal)
 			return

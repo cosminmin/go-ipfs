@@ -7,6 +7,8 @@ import (
 	"os"
 	"time"
 
+	u "github.com/ipfs/go-ipfs/core/commands/util"
+
 	humanize "gx/ipfs/QmPSBJL4momYnE7DcUyk2DVhD6rH488ZmHBGLbxNdhU44K/go-humanize"
 	cmds "gx/ipfs/QmPq2D7Yoyev7yeMuMnkEYBqmQuUu5kb91UXPPoiik1Xyp/go-ipfs-cmds"
 	protocol "gx/ipfs/QmZNkThpqfVXs9GNbexPrfBbXSLNYeKrE7jwFM2oqHbyqN/go-libp2p-protocol"
@@ -80,7 +82,7 @@ Example:
 	},
 
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) {
-		nd, err := GetNode(env)
+		nd, err := u.GetNode(env)
 		if err != nil {
 			res.SetError(err, cmdkit.ErrNormal)
 			return

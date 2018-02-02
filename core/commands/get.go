@@ -11,6 +11,7 @@ import (
 
 	core "github.com/ipfs/go-ipfs/core"
 	e "github.com/ipfs/go-ipfs/core/commands/e"
+	u "github.com/ipfs/go-ipfs/core/commands/util"
 	dag "github.com/ipfs/go-ipfs/merkledag"
 	path "github.com/ipfs/go-ipfs/path"
 	tar "github.com/ipfs/go-ipfs/thirdparty/tar"
@@ -63,7 +64,7 @@ may also specify the level of compression by specifying '-l=<1-9>'.
 			return
 		}
 
-		node, err := GetNode(env)
+		node, err := u.GetNode(env)
 		if err != nil {
 			res.SetError(err, cmdkit.ErrNormal)
 			return

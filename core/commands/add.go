@@ -10,6 +10,7 @@ import (
 	bstore "github.com/ipfs/go-ipfs/blocks/blockstore"
 	blockservice "github.com/ipfs/go-ipfs/blockservice"
 	core "github.com/ipfs/go-ipfs/core"
+	u "github.com/ipfs/go-ipfs/core/commands/util"
 	"github.com/ipfs/go-ipfs/core/coreunix"
 	offline "github.com/ipfs/go-ipfs/exchange/offline"
 	dag "github.com/ipfs/go-ipfs/merkledag"
@@ -140,7 +141,7 @@ You can now check what blocks have been created by:
 		return nil
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) {
-		n, err := GetNode(env)
+		n, err := u.GetNode(env)
 		if err != nil {
 			res.SetError(err, cmdkit.ErrNormal)
 			return

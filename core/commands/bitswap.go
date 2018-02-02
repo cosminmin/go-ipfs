@@ -8,6 +8,7 @@ import (
 	oldcmds "github.com/ipfs/go-ipfs/commands"
 	lgc "github.com/ipfs/go-ipfs/commands/legacy"
 	e "github.com/ipfs/go-ipfs/core/commands/e"
+	u "github.com/ipfs/go-ipfs/core/commands/util"
 	bitswap "github.com/ipfs/go-ipfs/exchange/bitswap"
 	decision "github.com/ipfs/go-ipfs/exchange/bitswap/decision"
 
@@ -140,7 +141,7 @@ var bitswapStatCmd = &cmds.Command{
 	},
 	Type: bitswap.Stat{},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) {
-		nd, err := GetNode(env)
+		nd, err := u.GetNode(env)
 		if err != nil {
 			res.SetError(err, cmdkit.ErrNormal)
 			return
