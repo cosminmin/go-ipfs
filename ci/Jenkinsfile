@@ -137,8 +137,7 @@ ansiColor('xterm') { withEnv(['TERM=xterm-color']) {
             } catch (err) {
               throw err
             } finally {
-              /* IGNORE TEST FAILS */
-              /* junit allowEmptyResults: true, testResults: 'junit-report-*.xml' */
+              junit allowEmptyResults: true, testResults: 'junit-report-*.xml'
             }
           }
         }
