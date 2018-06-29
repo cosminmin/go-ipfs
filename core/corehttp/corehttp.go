@@ -86,7 +86,11 @@ func Serve(node *core.IpfsNode, lis net.Listener, options ...ServeOption) error 
 	}
 
 	node.Process().Go(func(p goprocess.Process) {
-		serverError = http.Serve(lis, handler)
+		server := http.Server{
+			Handler: handler,
+		}
+		server.SetKeepAlivesEnabled(false)
+		serverError = server.Serve(lis)
 		close(serverExited)
 	})
 
