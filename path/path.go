@@ -10,14 +10,24 @@ import (
 )
 
 var (
-	// ErrBadPath is returned when a given path is incorrectly formatted
-	ErrBadPath = errors.New("invalid 'ipfs ref' path")
-
 	// ErrNoComponents is used when Paths after a protocol
 	// do not contain at least one component
 	ErrNoComponents = errors.New(
 		"path must contain at least one component")
 )
+
+// ErrBadPath is returned when a given path is incorrectly formatted
+type ErrBadPath struct {
+	Err error
+}
+
+func (e ErrBadPath) Error() string {
+	errStr := "invalid 'ipfs ref' path"
+	if e.Err != nil {
+		errStr += ": " + e.Err.Error()
+	}
+	return errStr
+}
 
 // A Path represents an ipfs content path:
 //   * /<cid>/path/to/file
@@ -106,14 +116,14 @@ func ParsePath(txt string) (Path, error) {
 	// we expect this to start with a hash, and be an 'ipfs' path
 	if parts[0] != "" {
 		if _, err := ParseCidToPath(parts[0]); err != nil {
-			return "", ErrBadPath
+			return "", ErrBadPath{err}
 		}
 		// The case when the path starts with hash without a protocol prefix
 		return Path("/ipfs/" + txt), nil
 	}
 
 	if len(parts) < 3 {
-		return "", ErrBadPath
+		return "", ErrBadPath{}
 	}
 
 	if parts[1] == "ipfs" {
@@ -121,7 +131,7 @@ func ParsePath(txt string) (Path, error) {
 			return "", err
 		}
 	} else if parts[1] != "ipns" {
-		return "", ErrBadPath
+		return "", ErrBadPath{}
 	}
 
 	return Path(txt), nil

@@ -44,11 +44,11 @@ func TestPushPop(t *testing.T) {
 		letter := alphabet[index]
 		t.Log(partner.String())
 
-		c := cid.NewCidV0(u.Hash([]byte(letter)))
+		c, _ := cid.NewCidV0(u.Hash([]byte(letter)))
 		prq.Push(&wantlist.Entry{Cid: c, Priority: math.MaxInt32 - index}, partner)
 	}
 	for _, consonant := range consonants {
-		c := cid.NewCidV0(u.Hash([]byte(consonant)))
+		c, _ := cid.NewCidV0(u.Hash([]byte(consonant)))
 		prq.Remove(c, partner)
 	}
 
@@ -66,8 +66,8 @@ func TestPushPop(t *testing.T) {
 
 	// Entries popped should already be in correct order
 	for i, expected := range vowels {
-		exp := cid.NewCidV0(u.Hash([]byte(expected))).String()
-		if out[i] != exp {
+		exp, _ := cid.NewCidV0(u.Hash([]byte(expected)))
+		if out[i] != exp.String() {
 			t.Fatal("received", out[i], "expected", expected)
 		}
 	}
@@ -84,7 +84,7 @@ func TestPeerRepeats(t *testing.T) {
 	// Have each push some blocks
 
 	for i := 0; i < 5; i++ {
-		elcid := cid.NewCidV0(u.Hash([]byte(fmt.Sprint(i))))
+		elcid, _ := cid.NewCidV0(u.Hash([]byte(fmt.Sprint(i))))
 		prq.Push(&wantlist.Entry{Cid: elcid}, a)
 		prq.Push(&wantlist.Entry{Cid: elcid}, b)
 		prq.Push(&wantlist.Entry{Cid: elcid}, c)

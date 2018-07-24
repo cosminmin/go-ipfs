@@ -13,7 +13,8 @@ import (
 )
 
 func mkFakeCid(s string) *cid.Cid {
-	return cid.NewCidV0(u.Hash([]byte(s)))
+	c, _ := cid.NewCidV0(u.Hash([]byte(s)))
+	return c
 }
 
 func TestAppendWanted(t *testing.T) {

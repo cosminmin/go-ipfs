@@ -28,7 +28,7 @@ func TestBlocks(t *testing.T) {
 	defer bs.Close()
 
 	o := newObject([]byte("beep boop"))
-	h := cid.NewCidV0(u.Hash([]byte("beep boop")))
+	h, _ := cid.NewCidV0(u.Hash([]byte("beep boop")))
 	if !o.Cid().Equals(h) {
 		t.Error("Block key and data multihash key not equal")
 	}

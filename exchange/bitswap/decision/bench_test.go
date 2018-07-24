@@ -23,7 +23,7 @@ func BenchmarkTaskQueuePush(b *testing.B) {
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		c := cid.NewCidV0(u.Hash([]byte(fmt.Sprint(i))))
+		c, _ := cid.NewCidV0(u.Hash([]byte(fmt.Sprint(i))))
 
 		q.Push(&wantlist.Entry{Cid: c, Priority: math.MaxInt32}, peers[i%len(peers)])
 	}

@@ -25,7 +25,7 @@ func TestResolveNoComponents(t *testing.T) {
 	}
 
 	_, err = core.Resolve(n.Context(), n.Namesys, n.Resolver, path.Path("/../.."))
-	if err != path.ErrBadPath {
+	if _, ok := err.(path.ErrBadPath); !ok {
 		t.Fatal("Should error with invalid path.", err)
 	}
 }
