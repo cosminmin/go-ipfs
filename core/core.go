@@ -16,11 +16,13 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"os"
 	"strings"
 	"time"
 
 	version "github.com/ipfs/go-ipfs"
+	dnspubsub "github.com/ipfs/go-ipfs/cmd/ipns-dns/namesys"
 	rp "github.com/ipfs/go-ipfs/exchange/reprovide"
 	filestore "github.com/ipfs/go-ipfs/filestore"
 	mount "github.com/ipfs/go-ipfs/fuse/mount"
@@ -581,13 +583,24 @@ func (n *IpfsNode) startOnlineServicesWithHost(ctx context.Context, routingOptio
 	bitswapNetwork := bsnet.NewFromIpfsHost(n.PeerHost, n.Routing)
 	n.Exchange = bitswap.New(ctx, bitswapNetwork, n.Blockstore)
 
-	size, err := n.getCacheSize()
-	if err != nil {
-		return err
-	}
+	// size, err := n.getCacheSize()
+	// if err != nil {
+	// 	return err
+	// }
 
 	// setup name system
-	n.Namesys = namesys.NewNameSystem(n.Routing, n.Repo.Datastore(), size)
+	// n.Namesys = namesys.NewNameSystem(n.Routing, n.Repo.Datastore(), size)
+	// dnsdial := func(ctx context.Context, network, address string) (net.Conn, error) {
+	// 	dnsdialer := &net.Dialer{}
+	// 	host, _, err := net.SplitHostPort(address)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	return dnsdialer.DialContext(ctx, network, host+":4053")
+	// }
+	// dnsresolver := &net.Resolver{Dial: dnsdial}
+	dnsresolver := net.DefaultResolver
+	n.Namesys = dnspubsub.NewNamesys(n.Floodsub, dnsresolver, "/ipns/.well-known/all")
 
 	// setup ipns republishing
 	return n.setupIpnsRepublisher()
