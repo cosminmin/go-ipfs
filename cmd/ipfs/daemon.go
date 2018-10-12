@@ -290,9 +290,9 @@ func daemonFunc(req *cmds.Request, re cmds.ResponseEmitter, env cmds.Environment
 
 	// Start assembling node config
 	ncfg := &core.BuildCfg{
-		Repo:                        repo,
-		Permanent:                   true, // It is temporary way to signify that node is permanent
-		Online:                      !offline,
+		Repo:      repo,
+		Permanent: true, // It is temporary way to signify that node is permanent
+		Online:    !offline,
 		DisableEncryptedConnections: unencrypted,
 		ExtraOpts: map[string]bool{
 			"pubsub": pubsub,
@@ -461,13 +461,15 @@ func serveHTTPApi(req *cmds.Request, cctx *oldcmds.Context) (<-chan error, error
 		corehttp.MutexFractionOption("/debug/pprof-mutex/"),
 		corehttp.MetricsScrapingOption("/debug/metrics/prometheus"),
 		corehttp.LogOption(),
-		corehttp.ProxyOption(),
 	}
 
 	if len(cfg.Gateway.RootRedirect) > 0 {
 		opts = append(opts, corehttp.RedirectOption("", cfg.Gateway.RootRedirect))
 	}
 
+	if cfg.Experimental.P2pHttpProxy {
+		opts = append(opts, corehttp.ProxyOption())
+	}
 	node, err := cctx.ConstructNode()
 	if err != nil {
 		return nil, fmt.Errorf("serveHTTPApi: ConstructNode() failed: %s", err)
