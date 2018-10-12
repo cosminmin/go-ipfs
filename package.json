@@ -589,9 +589,9 @@
     },
     {
       "author": "hsanjuan",
-      "hash": "QmWmzdApcPtLYzdCsp7ZYuSwaa3rjPXv9KoaYMkvS3Hnas",
+      "hash": "Qmcb1uGjGVgU6riTwg9HvaSq3TtpDdF95Md3TogbcTRyag",
       "name": "go-libp2p-http",
-      "version": "1.1.3"
+      "version": "1.1.4"
     }
   ],
   "gxVersion": "0.10.0",
