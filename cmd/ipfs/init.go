@@ -17,7 +17,7 @@ import (
 	fsrepo "github.com/ipfs/go-ipfs/repo/fsrepo"
 
 	"gx/ipfs/QmRRovo1DE6i5cMjCbf19mQCSuszF6SKwdZNUMS7MtBnH1/go-ipfs-cmds"
-	"gx/ipfs/QmSoYrBMibm2T3LupaLuez7LPGnyrJwdRxvTfPUyCp691u/go-ipfs-config"
+	"gx/ipfs/QmUdHW6GSFiLKUMKWQQSZ9PaU5HS9btq1REAQ3izKT9dRY/go-ipfs-config"
 	"gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
 )
 
