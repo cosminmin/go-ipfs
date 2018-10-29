@@ -45,6 +45,16 @@ func (api *CoreAPI) ResolvePath(ctx context.Context, p coreiface.Path) (coreifac
 		return nil, err
 	}
 
+	// Shortcut for when there's not really anything to resolve.
+	seg := ipath.Segments()
+	if len(seg) == 2 && seg[0] == "ipfs" {
+		root, err := cid.Decode(seg[1])
+		if err != nil {
+			return nil, err
+		}
+		return coreiface.NewResolvedPath(ipath, root, root, ""), nil
+	}
+
 	var resolveOnce resolver.ResolveOnce
 
 	switch ipath.Segments()[0] {

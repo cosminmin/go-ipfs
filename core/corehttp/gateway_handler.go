@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"html/template"
 	"io"
 	"net/http"
 	"net/url"
@@ -269,11 +270,12 @@ func (i *gatewayHandler) getOrHeadHandler(ctx context.Context, w http.ResponseWr
 		return
 	}
 
+	goget := r.URL.Query().Get("go-get") == "1"
+
 	ixnd, err := dirr.Find(ctx, "index.html")
 	switch {
 	case err == nil:
 		dirwithoutslash := urlPath[len(urlPath)-1] != '/'
-		goget := r.URL.Query().Get("go-get") == "1"
 		if dirwithoutslash && !goget {
 			// See comment above where originalUrlPath is declared.
 			http.Redirect(w, r, originalUrlPath+"/", 302)
@@ -304,6 +306,15 @@ func (i *gatewayHandler) getOrHeadHandler(ctx context.Context, w http.ResponseWr
 
 	if r.Method == "HEAD" {
 		return
+	}
+
+	var meta []template.HTML
+	if goget {
+		seg := path.FromString(parsedPath.String()).Segments()
+		fmt.Printf("goget seg: %+v\n", seg)
+		metatpl := `<meta name="go-import" content="%[1]s git https://%[1]s/.git">`
+		dvcsimport := "e45e73dd.ngrok.io" + parsedPath.String()
+		meta = append(meta, template.HTML(fmt.Sprintf(metatpl, dvcsimport)))
 	}
 
 	// storage for directory listing
@@ -352,6 +363,7 @@ func (i *gatewayHandler) getOrHeadHandler(ctx context.Context, w http.ResponseWr
 		Listing:  dirListing,
 		Path:     originalUrlPath,
 		BackLink: backLink,
+		Meta:     meta,
 	}
 	err = listingTemplate.Execute(w, tplData)
 	if err != nil {
