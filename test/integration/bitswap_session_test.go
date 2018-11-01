@@ -3,22 +3,26 @@ package integrationtest
 import (
 	"bytes"
 	"context"
+	"fmt"
+	"gx/ipfs/QmNkxFCmPtr2RQxjZNRCNryLud4L9wMEiBJsLgF14MqTHj/go-bitswap"
+	"io"
+	"math"
+	"math/rand"
+	"testing"
+	"time"
+
 	"github.com/ipfs/go-ipfs/core/coreapi"
 	"github.com/ipfs/go-ipfs/core/coreapi/interface"
 	"github.com/ipfs/go-ipfs/core/coreunix"
 	"github.com/ipfs/go-ipfs/thirdparty/unit"
-	"gx/ipfs/QmNkxFCmPtr2RQxjZNRCNryLud4L9wMEiBJsLgF14MqTHj/go-bitswap"
-	"io"
-	"math"
-	"testing"
-	"time"
+
+	"gx/ipfs/QmUDTcnDp2WssbmiDLC6aYurUeyt7QeRakHUQMxA2mZ5iB/go-libp2p/p2p/net/mock"
 
 	"github.com/ipfs/go-ipfs/core"
 	"github.com/ipfs/go-ipfs/core/mock"
-	"gx/ipfs/QmUDTcnDp2WssbmiDLC6aYurUeyt7QeRakHUQMxA2mZ5iB/go-libp2p/p2p/net/mock"
 )
 
-func TestBitswapSessions(b *testing.T) {
+func BenchmarkBitswapSessions(b *testing.B) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	const numPeers = 6
@@ -55,6 +59,16 @@ func TestBitswapSessions(b *testing.T) {
 				continue
 			}
 
+			pID1 := n1.PeerHost.ID()
+			pID2 := n2.PeerHost.ID()
+			links := mn.LinksBetweenPeers(pID1, pID2)
+			for _, link := range links {
+				link.SetOptions(mocknet.LinkOptions{
+					Latency: (time.Duration(10+rand.Intn(200)) * time.Millisecond),
+					// TODO add to conf. This is tricky because we want 0 values to be functional.
+					Bandwidth: 300000,
+				})
+			}
 			p2 := n2.PeerHost.Peerstore().PeerInfo(n2.PeerHost.ID())
 			if err := n1.PeerHost.Connect(ctx, p2); err != nil {
 				b.Fatal(err)
@@ -62,7 +76,7 @@ func TestBitswapSessions(b *testing.T) {
 		}
 	}
 
-	randomBytes := RandomBytes(100*unit.MB)
+	randomBytes := RandomBytes(10 * unit.MB)
 	added, err := coreunix.Add(nodes[0], bytes.NewReader(randomBytes))
 	if err != nil {
 		b.Fatal(err)
@@ -73,6 +87,8 @@ func TestBitswapSessions(b *testing.T) {
 		b.Fatal(err)
 	}
 
+	blocks := make([]uint64, len(nodes))
+
 	//  get it out.
 	for i, n := range nodes {
 		// skip first because block not in its exchange. will hang.
@@ -80,8 +96,9 @@ func TestBitswapSessions(b *testing.T) {
 			continue
 		}
 
+		//testName := fmt.Sprintf("Node %d", i)
+		//b.Run(testName, func(b *testing.B) {
 		nApi := coreapi.NewCoreAPI(n)
-
 		got, err := nApi.Unixfs().Get(ctx, ap)
 		if err != nil {
 			b.Error(err)
@@ -93,12 +110,13 @@ func TestBitswapSessions(b *testing.T) {
 			b.Fatal("catted data does not match added data")
 		}
 
-		for _, bPeer := range nodes {
+		for j, bPeer := range nodes {
 			bstat, err := bPeer.Exchange.(*bitswap.Bitswap).Stat()
 			if err != nil {
 				b.Fatal(err)
 			}
-			b.Logf("%s blocks sent: %d", bPeer.Identity, bstat.BlocksSent)
+			fmt.Printf("%d: <-%d blocks sent: %d\n", i, j, bstat.BlocksSent-blocks[j])
+			blocks[j] = bstat.BlocksSent
 		}
 
 		bstat, err := n.Exchange.(*bitswap.Bitswap).Stat()
@@ -106,8 +124,8 @@ func TestBitswapSessions(b *testing.T) {
 			b.Fatal(err)
 		}
 
-		b.Logf("%d %s got data.", i, n.Identity)
-		b.Logf("%s duplicate blocks received: %d", n.Identity, bstat.DupBlksReceived)
+		fmt.Printf("%d: duplicate blocks received: %d\n", i, bstat.DupBlksReceived)
+		//	})
 	}
 	cancel()
 	return
