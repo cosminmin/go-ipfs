@@ -17,7 +17,10 @@ import (
 
 // ResolveNode resolves the path `p` using Unixfs resolver, gets and returns the
 // resolved Node.
-func (api *CoreAPI) ResolveNode(ctx context.Context, p coreiface.Path) (ipld.Node, error) {
+func (api *CoreAPI) ResolveNode(ctx context.Context, p coreiface.Path) (out ipld.Node, err error) {
+	ctx = log.Start(ctx, "ResolveNode")
+	log.SetTag(ctx, "path", p.String())
+	defer func() { log.FinishWithErr(ctx, err) }()
 	rp, err := api.ResolvePath(ctx, p)
 	if err != nil {
 		return nil, err
@@ -32,13 +35,17 @@ func (api *CoreAPI) ResolveNode(ctx context.Context, p coreiface.Path) (ipld.Nod
 
 // ResolvePath resolves the path `p` using Unixfs resolver, returns the
 // resolved path.
-func (api *CoreAPI) ResolvePath(ctx context.Context, p coreiface.Path) (coreiface.ResolvedPath, error) {
+func (api *CoreAPI) ResolvePath(ctx context.Context, p coreiface.Path) (out coreiface.ResolvedPath, err error) {
+	ctx = log.Start(ctx, "ResolvePath")
+	log.SetTag(ctx, "path", p.String())
+	defer func() { log.FinishWithErr(ctx, err) }()
+
 	if _, ok := p.(coreiface.ResolvedPath); ok {
 		return p.(coreiface.ResolvedPath), nil
 	}
 
 	ipath := ipfspath.Path(p.String())
-	ipath, err := core.ResolveIPNS(ctx, api.node.Namesys, ipath)
+	ipath, err = core.ResolveIPNS(ctx, api.node.Namesys, ipath)
 	if err == core.ErrNoNamesys {
 		return nil, coreiface.ErrOffline
 	} else if err != nil {
