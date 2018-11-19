@@ -144,6 +144,11 @@ You can now check what blocks have been created by:
 			return err
 		}
 
+		node, err := cmdenv.GetNode(env)
+		if err != nil {
+			return err
+		}
+
 		progress, _ := req.Options[progressOptionName].(bool)
 		trickle, _ := req.Options[trickleOptionName].(bool)
 		wrap, _ := req.Options[wrapOptionName].(bool)
@@ -209,7 +214,8 @@ You can now check what blocks have been created by:
 			var err error
 			defer func() { errCh <- err }()
 			defer close(events)
-			_, err = api.Unixfs().Add(req.Context, req.Files, opts...)
+			resolvePath, err := api.Unixfs().Add(req.Context, req.Files, opts...)
+			_ = node.Reprovider.Provide(resolvePath.Cid())
 		}()
 
 		err = res.Emit(events)

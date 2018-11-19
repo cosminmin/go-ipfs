@@ -84,27 +84,39 @@ func (rp *Reprovider) Reprovide() error {
 		return fmt.Errorf("failed to get key chan: %s", err)
 	}
 	for c := range keychan {
-		// hash security
-		if err := verifcid.ValidateCid(c); err != nil {
-			log.Errorf("insecure hash in reprovider, %s (%s)", c, err)
-			continue
-		}
-		op := func() error {
-			err := rp.rsys.Provide(rp.ctx, c, true)
-			if err != nil {
-				log.Debugf("Failed to provide key: %s", err)
-			}
-			return err
-		}
-
-		// TODO: this backoff library does not respect our context, we should
-		// eventually work contexts into it. low priority.
-		err := backoff.Retry(op, backoff.NewExponentialBackOff())
-		if err != nil {
-			log.Debugf("Providing failed after number of retries: %s", err)
+		if err := rp.Provide(c); err != nil {
 			return err
 		}
 	}
+	return nil
+}
+
+func (rp *Reprovider) Provide(c cid.Cid) error {
+	// hash security
+	if err := verifcid.ValidateCid(c); err != nil {
+		log.Errorf("insecure hash in reprovider, %s (%s)", c, err)
+		//  TODO: maybe returning nil here isn't great as it idiomatically
+		// 		  indicates there was no error, even though overall it has
+		// 		  the same effect
+		return nil
+	}
+
+	op := func() error {
+		err := rp.rsys.Provide(rp.ctx, c, true)
+		if err != nil {
+			log.Debugf("Failed to provide key: %s", err)
+		}
+		return err
+	}
+
+	// TODO: this backoff library does not respect our context, we should
+	// eventually work contexts into it. low priority.
+	err := backoff.Retry(op, backoff.NewExponentialBackOff())
+	if err != nil {
+		log.Debugf("Providing failed after number of retries: %s", err)
+		return err
+	}
+
 	return nil
 }
 
