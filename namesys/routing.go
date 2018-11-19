@@ -98,9 +98,13 @@ func (r *IpnsResolver) resolveOnceAsync(ctx context.Context, name string, option
 		return out
 	}
 
+	ctx = log.Start(ctx, "resolveOnceAsync")
 	go func() {
-		defer cancel()
-		defer close(out)
+		defer func() {
+			log.Finish(ctx)
+			cancel()
+			close(out)
+		}()
 		for {
 			select {
 			case val, ok := <-vals:

@@ -69,8 +69,12 @@ func (r *DNSResolver) resolveOnceAsync(ctx context.Context, name string, options
 		return p, nil
 	}
 
+	ctx = log.Start(ctx, "resolveOnceAsync")
 	go func() {
-		defer close(out)
+		defer func() {
+			close(out)
+			log.Finish(ctx)
+		}()
 		for {
 			select {
 			case subRes, ok := <-subChan:

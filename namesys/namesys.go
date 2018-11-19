@@ -127,10 +127,14 @@ func (ns *mpns) resolveOnceAsync(ctx context.Context, name string, options opts.
 		res = ns.proquintResolver
 	}
 
+	ctx = log.Start(ctx, "resolveOnceAsync")
 	resCh := res.resolveOnceAsync(ctx, key, options)
 	var best onceResult
 	go func() {
-		defer close(out)
+		defer func() {
+			close(out)
+			log.Finish(ctx)
+		}()
 		for {
 			select {
 			case res, ok := <-resCh:

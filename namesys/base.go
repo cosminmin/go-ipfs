@@ -21,11 +21,14 @@ type resolver interface {
 }
 
 // resolve is a helper for implementing Resolver.ResolveN using resolveOnce.
-func resolve(ctx context.Context, r resolver, name string, options opts.ResolveOpts) (path.Path, error) {
+func resolve(ctx context.Context, r resolver, name string, options opts.ResolveOpts) (out path.Path, err error) {
+	ctx = log.Start(ctx, "resolve")
+	defer func() { log.FinishWithErr(ctx, err) }()
+
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	err := ErrResolveFailed
+	err = ErrResolveFailed
 	var p path.Path
 
 	resCh := resolveAsync(ctx, r, name, options)
@@ -41,6 +44,7 @@ func resolve(ctx context.Context, r resolver, name string, options opts.ResolveO
 }
 
 func resolveAsync(ctx context.Context, r resolver, name string, options opts.ResolveOpts) <-chan Result {
+	ctx = log.Start(ctx, "resolveAsync")
 	resCh := r.resolveOnceAsync(ctx, name, options)
 	depth := options.Depth
 	outCh := make(chan Result, 1)
@@ -53,6 +57,7 @@ func resolveAsync(ctx context.Context, r resolver, name string, options opts.Res
 			if cancelSub != nil {
 				cancelSub()
 			}
+			log.Finish(ctx)
 		}()
 
 		for {
