@@ -215,7 +215,10 @@ You can now check what blocks have been created by:
 			defer func() { errCh <- err }()
 			defer close(events)
 			resolvePath, err := api.Unixfs().Add(req.Context, req.Files, opts...)
-			_ = node.Reprovider.Provide(resolvePath.Cid())
+
+			if !local {
+				_ = node.Reprovider.Provide(resolvePath.Cid())
+			}
 		}()
 
 		err = res.Emit(events)
