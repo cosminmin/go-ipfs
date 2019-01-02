@@ -308,12 +308,13 @@ func (i *gatewayHandler) getOrHeadHandler(ctx context.Context, w http.ResponseWr
 		return
 	}
 
+	gogetGateway := "lars.pub"
 	var meta []template.HTML
 	if goget {
 		seg := path.FromString(parsedPath.String()).Segments()
 		fmt.Printf("goget seg: %+v\n", seg)
-		metatpl := `<meta name="go-import" content="%[1]s git https://%[1]s/.git">`
-		dvcsimport := "e45e73dd.ngrok.io" + parsedPath.String()
+		metatpl := `<meta name="go-import" content="%[1]s git https://%[1]s.git">`
+		dvcsimport := gogetGateway + parsedPath.String()
 		meta = append(meta, template.HTML(fmt.Sprintf(metatpl, dvcsimport)))
 	}
 
