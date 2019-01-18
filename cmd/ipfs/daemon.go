@@ -10,7 +10,6 @@ import (
 	"runtime"
 	"sort"
 	"sync"
-	"time"
 
 	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/exporter/jaeger"
 	ocprom "gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/exporter/prometheus"
@@ -18,6 +17,7 @@ import (
 	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/stats/view"
 	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/trace"
 	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/zpages"
+	datadog "gx/ipfs/Qmc3ySY4x7rPDqU9q1ziw7oK2rGz1kJNR9NtAMbJ6EinnV/opencensus-go-exporter-datadog"
 
 	version "github.com/ipfs/go-ipfs"
 	utilmain "github.com/ipfs/go-ipfs/cmd/ipfs/util"
@@ -193,20 +193,25 @@ Headers.
 // }
 
 func daemonFunc(req *cmds.Request, re cmds.ResponseEmitter, env cmds.Environment) (_err error) {
-	metricsCfg := &observations.MetricsConfig{
-		PrometheusEndpoint:     ":8889",
-		StatsReportingInterval: 2 * time.Second,
-	}
-	tracingCfg := &observations.TracingConfig{
-		JaegerAgentEndpoint:     "0.0.0.0:6831",
-		JaegerCollectorEndpoint: "http://0.0.0.0:14268",
-		TracingSamplingProb:     0.3,
-		TracingServiceName:      "ipfs-daemon",
-	}
-	fmt.Println("oc prom starting...")
-	setupMetrics(metricsCfg)
-	fmt.Println("oc jaeger starting...")
-	setupTracing(tracingCfg)
+	// metricsCfg := &observations.MetricsConfig{
+	// 	PrometheusEndpoint:     ":8889",
+	// 	StatsReportingInterval: 2 * time.Second,
+	// }
+	// tracingCfg := &observations.TracingConfig{
+	// 	JaegerAgentEndpoint:     "0.0.0.0:6831",
+	// 	JaegerCollectorEndpoint: "http://0.0.0.0:14268",
+	// 	TracingSamplingProb:     0.3,
+	// 	TracingServiceName:      "ipfs-daemon",
+	// }
+	// fmt.Println("oc prom starting...")
+	// setupMetrics(metricsCfg)
+	// fmt.Println("oc jaeger starting...")
+	// setupTracing(tracingCfg)
+
+	fmt.Println("oc datadog tracing/metrics starting...")
+	log.Info("oc datadog tracing/metrics starting...\n")
+	dd := setupDatadogTracingMetrics()
+
 	// // Inject metrics before we do anything
 	// err := mprome.Inject()
 	// if err != nil {
@@ -417,6 +422,11 @@ func daemonFunc(req *cmds.Request, re cmds.ResponseEmitter, env cmds.Environment
 	// Give the user some immediate feedback when they hit C-c
 	go func() {
 		<-req.Context.Done()
+
+		// Flush stats/traces to datadog agent.
+		// Doing it here as this go func is blocked until a signal is received.
+		dd.Stop()
+
 		fmt.Println("Received interrupt signal, shutting down...")
 		fmt.Println("(Hit ctrl-c again to force-shutdown the daemon.)")
 	}()
@@ -812,4 +822,24 @@ func setupTracing(cfg *observations.TracingConfig) *jaeger.Exporter {
 	// configure tracing
 	trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
 	return je
+}
+
+func setupDatadogTracingMetrics() *datadog.Exporter {
+	dd, err := datadog.NewExporter(
+		datadog.Options{
+			Namespace: "ipfs",
+			Service:   "ipfs-daemon",
+		},
+	)
+	if err != nil {
+		log.Fatalf("Failed to create the Datadog exporter: %v", err)
+	}
+	// It is imperative to invoke flush before your main function exits
+
+	// Register it as a metrics exporter
+	view.RegisterExporter(dd)
+
+	// Register it as a metrics exporter
+	trace.RegisterExporter(dd)
+	return dd
 }

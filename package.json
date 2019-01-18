@@ -611,6 +611,12 @@
       "hash": "QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC",
       "name": "opencensus-go",
       "version": "0.0.1"
+    },
+    {
+      "author": "lanzafame",
+      "hash": "Qmc3ySY4x7rPDqU9q1ziw7oK2rGz1kJNR9NtAMbJ6EinnV",
+      "name": "opencensus-go-exporter-datadog",
+      "version": "0.0.2"
     }
   ],
   "gxVersion": "0.10.0",
