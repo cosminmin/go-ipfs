@@ -56,7 +56,7 @@ func makeHandler(n *core.IpfsNode, l net.Listener, options ...ServeOption) (http
 		Propagation:      &tracecontext.HTTPFormat{},
 		Handler:          topMux,
 		StartOptions:     trace.StartOptions{SpanKind: trace.SpanKindServer},
-		FormatSpanName:   func(req *http.Request) string { return req.Host + ":" + req.URL.Path + ":" + req.Method },
+		FormatSpanName:   func(req *http.Request) string { return req.URL.Path + ":" + req.Method },
 	}
 	return ochandler, nil
 }

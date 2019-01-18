@@ -26,6 +26,8 @@ import (
 	dag "gx/ipfs/QmTQdH4848iTVCJmKXYyRiK72HufWTLYQQ8iN3JaQ8K1Hq/go-merkledag"
 	"gx/ipfs/QmTiRqrF5zkdZyrdsL5qndG1UbeWi8k8N2pYxCtXWrahR2/go-libp2p-routing"
 	"gx/ipfs/QmXWZCd8jfaHmt4UDSnjKmGcrQMw95bDGWqEeVLVJjoANX/go-ipfs-files"
+	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/tag"
+	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/trace"
 	ipld "gx/ipfs/QmcKKBwfz6FyQdHR2jsXrrF6XeSBXYL86anmWNewpFpoF5/go-ipld-format"
 	"gx/ipfs/QmekxXDhCxCJRNuzmHreuaT3BsuJcsjcXWNrtV9C8DRHtd/go-multibase"
 )
@@ -52,6 +54,8 @@ func newGatewayHandler(n *core.IpfsNode, c GatewayConfig, api coreiface.CoreAPI)
 	return i
 }
 
+var apiKey, _ = tag.NewKey("ipfs.io/api")
+
 // TODO(cryptix):  find these helpers somewhere else
 func (i *gatewayHandler) newDagFromReader(r io.Reader) (ipld.Node, error) {
 	// TODO(cryptix): change and remove this helper once PR1136 is merged
@@ -62,8 +66,15 @@ func (i *gatewayHandler) newDagFromReader(r io.Reader) (ipld.Node, error) {
 }
 
 func (i *gatewayHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ctx, err := tag.New(r.Context(), tag.Upsert(apiKey, "gateway"))
+	if err != nil {
+		log.Error(err)
+	}
+	ctx, span := trace.StartSpan(ctx, "gateway")
+	defer span.End()
+	span.AddAttributes(trace.StringAttribute("client-ip", r.RemoteAddr))
 	// the hour is a hard fallback, we don't expect it to happen, but just in case
-	ctx, cancel := context.WithTimeout(r.Context(), time.Hour)
+	ctx, cancel := context.WithTimeout(ctx, time.Hour)
 	defer cancel()
 
 	defer func() {
@@ -80,9 +91,11 @@ func (i *gatewayHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			i.postHandler(ctx, w, r)
 			return
 		case "PUT":
+			r = r.WithContext(ctx)
 			i.putHandler(w, r)
 			return
 		case "DELETE":
+			r = r.WithContext(ctx)
 			i.deleteHandler(w, r)
 			return
 		}
@@ -94,6 +107,7 @@ func (i *gatewayHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == "OPTIONS" {
+		r = r.WithContext(ctx)
 		i.optionsHandler(w, r)
 		return
 	}
@@ -110,6 +124,8 @@ func (i *gatewayHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (i *gatewayHandler) optionsHandler(w http.ResponseWriter, r *http.Request) {
+	_, span := trace.StartSpan(r.Context(), "gateway/options")
+	defer span.End()
 	/*
 		OPTIONS is a noop request that is used by the browsers to check
 		if server accepts cross-site XMLHttpRequest (indicated by the presence of CORS headers)
@@ -119,6 +135,8 @@ func (i *gatewayHandler) optionsHandler(w http.ResponseWriter, r *http.Request) 
 }
 
 func (i *gatewayHandler) getOrHeadHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	ctx, span := trace.StartSpan(ctx, "gateway/getOrHead")
+	defer span.End()
 	urlPath := r.URL.Path
 	escapedURLPath := r.URL.EscapedPath()
 
@@ -376,6 +394,8 @@ func (i *gatewayHandler) serveFile(w http.ResponseWriter, req *http.Request, nam
 }
 
 func (i *gatewayHandler) postHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	ctx, span := trace.StartSpan(ctx, "gateway/post")
+	defer span.End()
 	p, err := i.api.Unixfs().Add(ctx, files.NewReaderFile(r.Body))
 	if err != nil {
 		internalWebError(w, err)
@@ -388,8 +408,10 @@ func (i *gatewayHandler) postHandler(ctx context.Context, w http.ResponseWriter,
 }
 
 func (i *gatewayHandler) putHandler(w http.ResponseWriter, r *http.Request) {
+	_, span := trace.StartSpan(r.Context(), "gateway/put")
+	defer span.End()
 	// TODO(cryptix): move me to ServeHTTP and pass into all handlers
-	ctx, cancel := context.WithCancel(i.node.Context())
+	ctx, cancel := context.WithCancel(trace.NewContext(i.node.Context(), span))
 	defer cancel()
 
 	rootPath, err := path.ParsePath(r.URL.Path)
@@ -495,8 +517,10 @@ func (i *gatewayHandler) putHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (i *gatewayHandler) deleteHandler(w http.ResponseWriter, r *http.Request) {
+	_, span := trace.StartSpan(r.Context(), "gateway/delete")
+	defer span.End()
 	urlPath := r.URL.Path
-	ctx, cancel := context.WithCancel(i.node.Context())
+	ctx, cancel := context.WithCancel(trace.NewContext(i.node.Context(), span))
 	defer cancel()
 
 	p, err := path.ParsePath(urlPath)

@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"sort"
 	"sync"
+	"time"
 
 	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/exporter/jaeger"
 	ocprom "gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/exporter/prometheus"
@@ -193,18 +194,18 @@ Headers.
 // }
 
 func daemonFunc(req *cmds.Request, re cmds.ResponseEmitter, env cmds.Environment) (_err error) {
-	// metricsCfg := &observations.MetricsConfig{
-	// 	PrometheusEndpoint:     ":8889",
-	// 	StatsReportingInterval: 2 * time.Second,
-	// }
+	metricsCfg := &observations.MetricsConfig{
+		PrometheusEndpoint:     ":8889",
+		StatsReportingInterval: 2 * time.Second,
+	}
 	// tracingCfg := &observations.TracingConfig{
 	// 	JaegerAgentEndpoint:     "0.0.0.0:6831",
 	// 	JaegerCollectorEndpoint: "http://0.0.0.0:14268",
 	// 	TracingSamplingProb:     0.3,
 	// 	TracingServiceName:      "ipfs-daemon",
 	// }
-	// fmt.Println("oc prom starting...")
-	// setupMetrics(metricsCfg)
+	fmt.Println("oc prom starting...")
+	setupMetrics(metricsCfg)
 	// fmt.Println("oc jaeger starting...")
 	// setupTracing(tracingCfg)
 
@@ -827,19 +828,37 @@ func setupTracing(cfg *observations.TracingConfig) *jaeger.Exporter {
 func setupDatadogTracingMetrics() *datadog.Exporter {
 	dd, err := datadog.NewExporter(
 		datadog.Options{
-			Namespace: "ipfs",
+			Namespace: "go_ipfs",
 			Service:   "ipfs-daemon",
 		},
 	)
 	if err != nil {
 		log.Fatalf("Failed to create the Datadog exporter: %v", err)
 	}
-	// It is imperative to invoke flush before your main function exits
 
 	// Register it as a metrics exporter
 	view.RegisterExporter(dd)
 
+	if err := view.Register(
+		ochttp.ServerRequestCountView,
+		ochttp.ServerRequestBytesView,
+		ochttp.ServerResponseBytesView,
+		ochttp.ServerLatencyView,
+		ochttp.ServerRequestCountByMethod,
+		ochttp.ServerResponseCountByStatusCode,
+	); err != nil {
+		log.Fatalf("failed to register views: %v", err)
+	}
+
+	view.SetReportingPeriod(1 * time.Second)
+
 	// Register it as a metrics exporter
 	trace.RegisterExporter(dd)
+
+	// dd requires full control of sampling, so forward all
+	// spans to the dd exporter.
+	trace.ApplyConfig(trace.Config{
+		DefaultSampler: trace.AlwaysSample(),
+	})
 	return dd
 }
