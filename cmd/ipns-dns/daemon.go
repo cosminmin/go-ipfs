@@ -7,26 +7,26 @@ import (
 	"sync"
 	"time"
 
-	p2pdiscovery "gx/ipfs/QmPL3AKtiaQyYpchZceXBZhZ3MSnoGqJvLZrc7fzDTTQdJ/go-libp2p/p2p/discovery"
-	cid "gx/ipfs/QmPSQnBKM9g7BaUcZCvswUJVscQ1ipjmwxN5PXCjkp9EQ7/go-cid"
-	routing "gx/ipfs/QmPmFeQ5oY5G6M7aBWggi5phxEPXwsQntE1DFcUzETULdp/go-libp2p-routing"
-	p2pcrypto "gx/ipfs/QmPvyPwuCgJ7pDmrKDxRtsScJgBaM5h4EpRL2qQJsmXf4n/go-libp2p-crypto"
-	blocks "gx/ipfs/QmRcHuYzAyswytBuMF78rj3LTChYszomRFXNg4685ZN1WM/go-block-format"
-	p2pnet "gx/ipfs/QmSTaEYUgDe1r581hxyd2u9582Hgp3KX4wGwYbRqz2u9Qh/go-libp2p-net"
-	record "gx/ipfs/QmSb4B8ZAAj5ALe9LjfzPyF8Ma6ezC1NTnDF2JQPUJxEXb/go-libp2p-record"
-	dht "gx/ipfs/QmSteomMgXnSQxLEY5UpxmkYAd8QF9JuLLeLYBokTHxFru/go-libp2p-kad-dht"
-	dhtopts "gx/ipfs/QmSteomMgXnSQxLEY5UpxmkYAd8QF9JuLLeLYBokTHxFru/go-libp2p-kad-dht/opts"
-	floodsub "gx/ipfs/QmTcC9Qx2adsdGguNpqZ6dJK7MMsH8sf3yfxZxG3bSwKet/go-libp2p-floodsub"
+	maddr "gx/ipfs/QmNTCey11oxhb1AxDnQBRHtdhap6Ctud872NjAYPYYXPuc/go-multiaddr"
+	p2pnet "gx/ipfs/QmNgLg1NTw37iWbYPKcyK85YJ9Whs1MkPtJwhfqbNYAyKg/go-libp2p-net"
+	p2pcrypto "gx/ipfs/QmNiJiXwWE3kRhZrC5ej3kSjWHm337pYfhjLGSCDNKJP2s/go-libp2p-crypto"
+	dht "gx/ipfs/QmNoNExMdWrYSPZDiJJTVmxSh6uKLN26xYVzbLzBLedRcv/go-libp2p-kad-dht"
+	dhtopts "gx/ipfs/QmNoNExMdWrYSPZDiJJTVmxSh6uKLN26xYVzbLzBLedRcv/go-libp2p-kad-dht/opts"
+	peerstore "gx/ipfs/QmPiemjiKBC9VA7vZF82m4x1oygtg2c2YVqag8PX7dN1BD/go-libp2p-peerstore"
+	cid "gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
+	routing "gx/ipfs/QmTiRqrF5zkdZyrdsL5qndG1UbeWi8k8N2pYxCtXWrahR2/go-libp2p-routing"
+	pubsub "gx/ipfs/QmVRxA4J3UPQpw74dLrQ6NJkfysCA1H4GU28gVpXQt9zMU/go-libp2p-pubsub"
+	ipns "gx/ipfs/QmWPFehHmySCdaGttQ48iwF7M6mBRrGE5GSPWKCuMWqJDR/go-ipns"
+	ipnspb "gx/ipfs/QmWPFehHmySCdaGttQ48iwF7M6mBRrGE5GSPWKCuMWqJDR/go-ipns/pb"
 	dns "gx/ipfs/QmWchsfMt9Re1CQaiHqPQC1DrZ9bkpa6n229dRYkGyLXNh/dns"
-	peerstore "gx/ipfs/QmWtCpWB39Rzc2xTB75MKorsxNpo3TyecTEN24CJ3KVohE/go-libp2p-peerstore"
-	ipns "gx/ipfs/QmX72XT6sSQRkNHKcAFLM2VqB3B4bWPetgWnHY8LgsUVeT/go-ipns"
-	ipnspb "gx/ipfs/QmX72XT6sSQRkNHKcAFLM2VqB3B4bWPetgWnHY8LgsUVeT/go-ipns/pb"
-	maddr "gx/ipfs/QmYmsdtJ3HsodkePE3eU3TsCaP2YvPZJ4LoXnNkDE5Tpt7/go-multiaddr"
-	datastore "gx/ipfs/QmaRb5yNXKonhbkpNxNawoydk4N6es6b4fPj19sjEKsh5D/go-datastore"
-	p2ppeer "gx/ipfs/QmbNepETomvmXfz1X5pHNFD2QuPqnqi47dTd94QJWSorQ3/go-libp2p-peer"
+	blocks "gx/ipfs/QmWoXtvgC8inqFkAATB7cp2Dax7XBi9VDvSg9RCCZufmRk/go-block-format"
+	p2ppeer "gx/ipfs/QmY5Grm8pJdiSSVsYxx4uNRgweY72EmYwuSDbRnbFok3iY/go-libp2p-peer"
+	p2pdiscovery "gx/ipfs/QmYxivS34F2M2n44WQQnRHGAKS8aoRUxwGpi9wk4Cdn4Jf/go-libp2p/p2p/discovery"
+	p2phost "gx/ipfs/QmaoXrM4Z41PD48JY36YqQGKQpLGjyLA2cKcLsES7YddAq/go-libp2p-host"
 	proto "gx/ipfs/QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8/gogo-protobuf/proto"
 	multibase "gx/ipfs/QmekxXDhCxCJRNuzmHreuaT3BsuJcsjcXWNrtV9C8DRHtd/go-multibase"
-	p2phost "gx/ipfs/Qmf5yHzmWAyHSJRPAmZzfk3Yd7icydBLi7eec5741aov7v/go-libp2p-host"
+	datastore "gx/ipfs/Qmf4xQhNomPNhrtZc67qSnfJSjxjXs9LWvknJtSXwimPrM/go-datastore"
+	record "gx/ipfs/QmfARXVCzpwFXQdepAJZuqyNDgV9doEsMnVCo1ssmuSe1U/go-libp2p-record"
 )
 
 type Daemon struct {
@@ -34,8 +34,8 @@ type Daemon struct {
 	Host      p2phost.Host
 	Routing   routing.IpfsRouting
 	Discovery p2pdiscovery.Service
-	PubSub    *floodsub.PubSub
-	Updates   *floodsub.Subscription
+	PubSub    *pubsub.PubSub
+	Updates   *pubsub.Subscription
 
 	entries      map[p2ppeer.ID]*ipnspb.IpnsEntry
 	entriesMutex sync.RWMutex
@@ -44,15 +44,15 @@ type Daemon struct {
 func NewDaemon(ctx context.Context, host p2phost.Host) (*Daemon, error) {
 	d := &Daemon{Context: ctx, Host: host}
 
-	pubsub, err := floodsub.NewGossipSub(ctx, host)
+	psub, err := pubsub.NewGossipSub(ctx, host)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("gossipsub: %s", err)
 	}
 
 	interval := 5 * time.Second
 	discovery, err := p2pdiscovery.NewMdnsService(ctx, host, interval, p2pdiscovery.ServiceTag)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("discovery: %s", err)
 	}
 	discovery.RegisterNotifee(d)
 
@@ -63,10 +63,10 @@ func NewDaemon(ctx context.Context, host p2phost.Host) (*Daemon, error) {
 	}
 	dht, err := dht.New(ctx, host, dhtopts.Datastore(ds), dhtopts.Validator(validator))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("dht: %s", err)
 	}
 
-	d.PubSub = pubsub
+	d.PubSub = psub
 	d.Discovery = discovery
 	d.Routing = dht
 
@@ -117,7 +117,7 @@ func (d *Daemon) HandlePeerFound(pinfo peerstore.PeerInfo) {
 func (d *Daemon) AnnouncePubsub(ctx context.Context, topic string) error {
 	timeout := 120 * time.Second
 
-	cid := blocks.NewBlock([]byte("floodsub:" + topic)).Cid()
+	cid := blocks.NewBlock([]byte("pubsub:" + topic)).Cid()
 
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
@@ -133,7 +133,7 @@ func (d *Daemon) MaintainPubsub(ctx context.Context, topic string) error {
 	searchTimeout := 30 * time.Second
 	connectTimeout := 10 * time.Second
 
-	cid := blocks.NewBlock([]byte("floodsub:" + topic)).Cid()
+	cid := blocks.NewBlock([]byte("pubsub:" + topic)).Cid()
 
 	sctx, cancel := context.WithTimeout(ctx, searchTimeout)
 	defer cancel()
@@ -171,7 +171,7 @@ func (d *Daemon) Subscribe(topic string) error {
 	return nil
 }
 
-func (d *Daemon) validateMessage(ctx context.Context, msg *floodsub.Message) bool {
+func (d *Daemon) validateMessage(ctx context.Context, msg *pubsub.Message) bool {
 	return true
 }
 

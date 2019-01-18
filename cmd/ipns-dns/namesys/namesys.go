@@ -10,28 +10,29 @@ import (
 	namesys "github.com/ipfs/go-ipfs/namesys"
 	namesysopt "github.com/ipfs/go-ipfs/namesys/opts"
 
-	cid "gx/ipfs/QmPSQnBKM9g7BaUcZCvswUJVscQ1ipjmwxN5PXCjkp9EQ7/go-cid"
-	multihash "gx/ipfs/QmPnFwZ2JXKnXgMw8CdBPxn7FWh6LLdjUjxV1fKHuJnkr8/go-multihash"
-	p2pcrypto "gx/ipfs/QmPvyPwuCgJ7pDmrKDxRtsScJgBaM5h4EpRL2qQJsmXf4n/go-libp2p-crypto"
-	floodsub "gx/ipfs/QmTcC9Qx2adsdGguNpqZ6dJK7MMsH8sf3yfxZxG3bSwKet/go-libp2p-floodsub"
-	ipns "gx/ipfs/QmX72XT6sSQRkNHKcAFLM2VqB3B4bWPetgWnHY8LgsUVeT/go-ipns"
-	ipnspb "gx/ipfs/QmX72XT6sSQRkNHKcAFLM2VqB3B4bWPetgWnHY8LgsUVeT/go-ipns/pb"
-	path "gx/ipfs/QmdrpbDgeYH3VxkCciQCJY5LkDYdXtig6unDzQmMxFtWEw/go-path"
+	path "gx/ipfs/QmNYPETsdAu2uQ1k9q9S1jYEGURaLHV6cbYRSVFVRftpF8/go-path"
+	p2pcrypto "gx/ipfs/QmNiJiXwWE3kRhZrC5ej3kSjWHm337pYfhjLGSCDNKJP2s/go-libp2p-crypto"
+	cid "gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
+	pubsub "gx/ipfs/QmVRxA4J3UPQpw74dLrQ6NJkfysCA1H4GU28gVpXQt9zMU/go-libp2p-pubsub"
+	ipns "gx/ipfs/QmWPFehHmySCdaGttQ48iwF7M6mBRrGE5GSPWKCuMWqJDR/go-ipns"
+	ipnspb "gx/ipfs/QmWPFehHmySCdaGttQ48iwF7M6mBRrGE5GSPWKCuMWqJDR/go-ipns/pb"
 	proto "gx/ipfs/QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8/gogo-protobuf/proto"
 	multibase "gx/ipfs/QmekxXDhCxCJRNuzmHreuaT3BsuJcsjcXWNrtV9C8DRHtd/go-multibase"
+	multihash "gx/ipfs/QmerPMzPk1mJVowm8KgmoknWa4yCYvvugMPsgWmDNUvDLW/go-multihash"
 )
 
 type Namesys struct {
-	PubSub *floodsub.PubSub
+	PubSub *pubsub.PubSub
 	DNS    *net.Resolver
 	Topic  string
 }
 
-func NewNamesys(pubsub *floodsub.PubSub, resolver *net.Resolver, topic string) Namesys {
-	return Namesys{pubsub, resolver, topic}
+func NewNamesys(psub *pubsub.PubSub, resolver *net.Resolver, topic string) *Namesys {
+	nsys := &Namesys{psub, resolver, topic}
+	return nsys
 }
 
-func (n Namesys) Resolve(ctx context.Context, namepath string, opts ...namesysopt.ResolveOpt) (path.Path, error) {
+func (n *Namesys) Resolve(ctx context.Context, namepath string, opts ...namesysopt.ResolveOpt) (path.Path, error) {
 	if !strings.HasPrefix(namepath, "/ipns/") {
 		return "", fmt.Errorf("not an ipns name: %s", namepath)
 	}
@@ -79,7 +80,7 @@ func (n Namesys) Resolve(ctx context.Context, namepath string, opts ...namesysop
 	return p, nil
 }
 
-func (n Namesys) ResolveAsync(ctx context.Context, name string, opts ...namesysopt.ResolveOpt) <-chan namesys.Result {
+func (n *Namesys) ResolveAsync(ctx context.Context, name string, opts ...namesysopt.ResolveOpt) <-chan namesys.Result {
 	res := make(chan namesys.Result, 1)
 	path, err := n.Resolve(ctx, name, opts...)
 	res <- namesys.Result{path, err}
@@ -87,12 +88,12 @@ func (n Namesys) ResolveAsync(ctx context.Context, name string, opts ...namesyso
 	return res
 }
 
-func (n Namesys) Publish(ctx context.Context, name p2pcrypto.PrivKey, value path.Path) error {
+func (n *Namesys) Publish(ctx context.Context, name p2pcrypto.PrivKey, value path.Path) error {
 	arbitraryEOL := time.Now().Add(24 * time.Hour)
 	return n.PublishWithEOL(ctx, name, value, arbitraryEOL)
 }
 
-func (n Namesys) PublishWithEOL(ctx context.Context, privkey p2pcrypto.PrivKey, value path.Path, eol time.Time) error {
+func (n *Namesys) PublishWithEOL(ctx context.Context, privkey p2pcrypto.PrivKey, value path.Path, eol time.Time) error {
 	seqNo := 0
 	entry, err := ipns.Create(privkey, []byte(value), uint64(seqNo), eol)
 	if err != nil {

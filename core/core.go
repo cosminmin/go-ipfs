@@ -600,7 +600,7 @@ func (n *IpfsNode) startOnlineServicesWithHost(ctx context.Context, routingOptio
 	// }
 	// dnsresolver := &net.Resolver{Dial: dnsdial}
 	dnsresolver := net.DefaultResolver
-	n.Namesys = dnspubsub.NewNamesys(n.Floodsub, dnsresolver, "/ipns/.well-known/all")
+	n.Namesys = dnspubsub.NewNamesys(n.PubSub, dnsresolver, "/ipns/.well-known/all")
 
 	// setup ipns republishing
 	return n.setupIpnsRepublisher()
