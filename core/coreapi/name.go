@@ -15,6 +15,7 @@ import (
 	"gx/ipfs/QmNiJiXwWE3kRhZrC5ej3kSjWHm337pYfhjLGSCDNKJP2s/go-libp2p-crypto"
 	ci "gx/ipfs/QmNiJiXwWE3kRhZrC5ej3kSjWHm337pYfhjLGSCDNKJP2s/go-libp2p-crypto"
 	"gx/ipfs/QmY5Grm8pJdiSSVsYxx4uNRgweY72EmYwuSDbRnbFok3iY/go-libp2p-peer"
+	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/trace"
 )
 
 type NameAPI CoreAPI
@@ -36,6 +37,8 @@ func (e *ipnsEntry) Value() coreiface.Path {
 
 // Publish announces new IPNS name and returns the new IPNS entry.
 func (api *NameAPI) Publish(ctx context.Context, p coreiface.Path, opts ...caopts.NamePublishOption) (coreiface.IpnsEntry, error) {
+	ctx, span := trace.StartSpan(ctx, "nameapi/Publish")
+	defer span.End()
 	if err := api.checkPublishAllowed(); err != nil {
 		return nil, err
 	}
@@ -82,6 +85,8 @@ func (api *NameAPI) Publish(ctx context.Context, p coreiface.Path, opts ...caopt
 }
 
 func (api *NameAPI) Search(ctx context.Context, name string, opts ...caopts.NameResolveOption) (<-chan coreiface.IpnsResult, error) {
+	ctx, span := trace.StartSpan(ctx, "nameapi/Search")
+	defer span.End()
 	options, err := caopts.NameResolveOptions(opts...)
 	if err != nil {
 		return nil, err
@@ -122,6 +127,8 @@ func (api *NameAPI) Search(ctx context.Context, name string, opts ...caopts.Name
 // Resolve attempts to resolve the newest version of the specified name and
 // returns its path.
 func (api *NameAPI) Resolve(ctx context.Context, name string, opts ...caopts.NameResolveOption) (coreiface.Path, error) {
+	ctx, span := trace.StartSpan(ctx, "nameapi/Resolve")
+	defer span.End()
 	results, err := api.Search(ctx, name, opts...)
 	if err != nil {
 		return nil, err

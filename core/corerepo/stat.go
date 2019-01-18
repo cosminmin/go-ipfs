@@ -8,6 +8,7 @@ import (
 
 	"github.com/ipfs/go-ipfs/core"
 	fsrepo "github.com/ipfs/go-ipfs/repo/fsrepo"
+	"go.opencensus.io/trace"
 
 	humanize "gx/ipfs/QmPSBJL4momYnE7DcUyk2DVhD6rH488ZmHBGLbxNdhU44K/go-humanize"
 )
@@ -31,6 +32,8 @@ const NoLimit uint64 = math.MaxUint64
 
 // RepoStat returns a *Stat object with all the fields set.
 func RepoStat(ctx context.Context, n *core.IpfsNode) (Stat, error) {
+	ctx, span := trace.StartSpan(ctx, "corerepo/RepoStat")
+	defer span.End()
 	sizeStat, err := RepoSize(ctx, n)
 	if err != nil {
 		return Stat{}, err
@@ -64,6 +67,8 @@ func RepoStat(ctx context.Context, n *core.IpfsNode) (Stat, error) {
 
 // RepoSize returns a *Stat object with the RepoSize and StorageMax fields set.
 func RepoSize(ctx context.Context, n *core.IpfsNode) (SizeStat, error) {
+	ctx, span := trace.StartSpan(ctx, "corerepo/RepoSize")
+	defer span.End()
 	r := n.Repo
 
 	cfg, err := r.Config()

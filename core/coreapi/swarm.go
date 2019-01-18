@@ -13,6 +13,7 @@ import (
 	pstore "gx/ipfs/QmPiemjiKBC9VA7vZF82m4x1oygtg2c2YVqag8PX7dN1BD/go-libp2p-peerstore"
 	peer "gx/ipfs/QmY5Grm8pJdiSSVsYxx4uNRgweY72EmYwuSDbRnbFok3iY/go-libp2p-peer"
 	iaddr "gx/ipfs/QmYDzHj9xwKN8gCXVJYxYBKxCwCwJURNkwgkvuPP69p3bX/go-ipfs-addr"
+	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/trace"
 	protocol "gx/ipfs/QmZNkThpqfVXs9GNbexPrfBbXSLNYeKrE7jwFM2oqHbyqN/go-libp2p-protocol"
 	swarm "gx/ipfs/QmegQFxhr1J6yZ1vDQuDmJi5jntmj6BL96S11HVtXNCaHb/go-libp2p-swarm"
 )
@@ -30,6 +31,8 @@ type connInfo struct {
 }
 
 func (api *SwarmAPI) Connect(ctx context.Context, pi pstore.PeerInfo) error {
+	ctx, span := trace.StartSpan(ctx, "swarmapi/Connect")
+	defer span.End()
 	if api.peerHost == nil {
 		return coreiface.ErrOffline
 	}
@@ -42,6 +45,8 @@ func (api *SwarmAPI) Connect(ctx context.Context, pi pstore.PeerInfo) error {
 }
 
 func (api *SwarmAPI) Disconnect(ctx context.Context, addr ma.Multiaddr) error {
+	ctx, span := trace.StartSpan(ctx, "swarmapi/Disconnect")
+	defer span.End()
 	if api.peerHost == nil {
 		return coreiface.ErrOffline
 	}
@@ -76,7 +81,9 @@ func (api *SwarmAPI) Disconnect(ctx context.Context, addr ma.Multiaddr) error {
 	return nil
 }
 
-func (api *SwarmAPI) KnownAddrs(context.Context) (map[peer.ID][]ma.Multiaddr, error) {
+func (api *SwarmAPI) KnownAddrs(ctx context.Context) (map[peer.ID][]ma.Multiaddr, error) {
+	ctx, span := trace.StartSpan(ctx, "swarmapi/KnownAddrs")
+	defer span.End()
 	if api.peerHost == nil {
 		return nil, coreiface.ErrOffline
 	}
@@ -95,7 +102,9 @@ func (api *SwarmAPI) KnownAddrs(context.Context) (map[peer.ID][]ma.Multiaddr, er
 	return addrs, nil
 }
 
-func (api *SwarmAPI) LocalAddrs(context.Context) ([]ma.Multiaddr, error) {
+func (api *SwarmAPI) LocalAddrs(ctx context.Context) ([]ma.Multiaddr, error) {
+	ctx, span := trace.StartSpan(ctx, "swarmapi/LocalAddrs")
+	defer span.End()
 	if api.peerHost == nil {
 		return nil, coreiface.ErrOffline
 	}
@@ -103,7 +112,9 @@ func (api *SwarmAPI) LocalAddrs(context.Context) ([]ma.Multiaddr, error) {
 	return api.peerHost.Addrs(), nil
 }
 
-func (api *SwarmAPI) ListenAddrs(context.Context) ([]ma.Multiaddr, error) {
+func (api *SwarmAPI) ListenAddrs(ctx context.Context) ([]ma.Multiaddr, error) {
+	ctx, span := trace.StartSpan(ctx, "swarmapi/ListenAddrs")
+	defer span.End()
 	if api.peerHost == nil {
 		return nil, coreiface.ErrOffline
 	}
@@ -111,7 +122,9 @@ func (api *SwarmAPI) ListenAddrs(context.Context) ([]ma.Multiaddr, error) {
 	return api.peerHost.Network().InterfaceListenAddresses()
 }
 
-func (api *SwarmAPI) Peers(context.Context) ([]coreiface.ConnectionInfo, error) {
+func (api *SwarmAPI) Peers(ctx context.Context) ([]coreiface.ConnectionInfo, error) {
+	ctx, span := trace.StartSpan(ctx, "swarmapi/Peers")
+	defer span.End()
 	if api.peerHost == nil {
 		return nil, coreiface.ErrOffline
 	}

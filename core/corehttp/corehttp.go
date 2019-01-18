@@ -52,11 +52,11 @@ func makeHandler(n *core.IpfsNode, l net.Listener, options ...ServeOption) (http
 	// putting ochttp here for now as it returns a http.Handler
 	// and so doesn't simply fit the ServerOption func.
 	ochandler := &ochttp.Handler{
-		IsPublicEndpoint: true,
-		Propagation:      &tracecontext.HTTPFormat{},
-		Handler:          topMux,
-		StartOptions:     trace.StartOptions{SpanKind: trace.SpanKindServer},
-		FormatSpanName:   func(req *http.Request) string { return req.URL.Path + ":" + req.Method },
+		// IsPublicEndpoint: true,
+		Propagation:    &tracecontext.HTTPFormat{},
+		Handler:        topMux,
+		StartOptions:   trace.StartOptions{SpanKind: trace.SpanKindServer},
+		FormatSpanName: func(req *http.Request) string { return req.URL.Path + ":" + req.Method },
 	}
 	return ochandler, nil
 }

@@ -15,6 +15,7 @@ import (
 	routing "gx/ipfs/QmTiRqrF5zkdZyrdsL5qndG1UbeWi8k8N2pYxCtXWrahR2/go-libp2p-routing"
 	pubsub "gx/ipfs/QmVRxA4J3UPQpw74dLrQ6NJkfysCA1H4GU28gVpXQt9zMU/go-libp2p-pubsub"
 	peer "gx/ipfs/QmY5Grm8pJdiSSVsYxx4uNRgweY72EmYwuSDbRnbFok3iY/go-libp2p-peer"
+	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/trace"
 	p2phost "gx/ipfs/QmaoXrM4Z41PD48JY36YqQGKQpLGjyLA2cKcLsES7YddAq/go-libp2p-host"
 )
 
@@ -30,6 +31,8 @@ type pubSubMessage struct {
 }
 
 func (api *PubSubAPI) Ls(ctx context.Context) ([]string, error) {
+	ctx, span := trace.StartSpan(ctx, "pubsubapi/Ls")
+	defer span.End()
 	_, err := api.checkNode()
 	if err != nil {
 		return nil, err
@@ -39,6 +42,8 @@ func (api *PubSubAPI) Ls(ctx context.Context) ([]string, error) {
 }
 
 func (api *PubSubAPI) Peers(ctx context.Context, opts ...caopts.PubSubPeersOption) ([]peer.ID, error) {
+	ctx, span := trace.StartSpan(ctx, "pubsubapi/Peers")
+	defer span.End()
 	_, err := api.checkNode()
 	if err != nil {
 		return nil, err
@@ -60,6 +65,8 @@ func (api *PubSubAPI) Peers(ctx context.Context, opts ...caopts.PubSubPeersOptio
 }
 
 func (api *PubSubAPI) Publish(ctx context.Context, topic string, data []byte) error {
+	ctx, span := trace.StartSpan(ctx, "pubsubapi/Publish")
+	defer span.End()
 	_, err := api.checkNode()
 	if err != nil {
 		return err
@@ -69,6 +76,8 @@ func (api *PubSubAPI) Publish(ctx context.Context, topic string, data []byte) er
 }
 
 func (api *PubSubAPI) Subscribe(ctx context.Context, topic string, opts ...caopts.PubSubSubscribeOption) (coreiface.PubSubSubscription, error) {
+	ctx, span := trace.StartSpan(ctx, "pubsubapi/Subscribe")
+	defer span.End()
 	options, err := caopts.PubSubSubscribeOptions(opts...)
 
 	r, err := api.checkNode()
@@ -142,6 +151,8 @@ func (sub *pubSubSubscription) Close() error {
 }
 
 func (sub *pubSubSubscription) Next(ctx context.Context) (coreiface.PubSubMessage, error) {
+	ctx, span := trace.StartSpan(ctx, "pubsubapi/Next")
+	defer span.End()
 	msg, err := sub.subscription.Next(ctx)
 	if err != nil {
 		return nil, err

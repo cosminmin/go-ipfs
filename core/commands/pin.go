@@ -21,6 +21,7 @@ import (
 	"gx/ipfs/QmYMQuypUbgsdNHmuCBSUJV6wdQVsBHRivNAp3efHJwZJD/go-verifcid"
 	bserv "gx/ipfs/QmYPZzd9VqmJDwxUnThfeSbV1Y5o53aVPDijTB7j7rS9Ep/go-blockservice"
 	offline "gx/ipfs/QmYZwey1thDTynSrvd6qQkX24UpTka6TFhQ2v569UpoqxD/go-ipfs-exchange-offline"
+	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/trace"
 	cmdkit "gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
 )
 
@@ -67,6 +68,8 @@ var addPinCmd = &cmds.Command{
 	},
 	Type: AddPinOutput{},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
+		ctx, span := trace.StartSpan(req.Context, "command/Pin/Add")
+		defer span.End()
 		n, err := cmdenv.GetNode(env)
 		if err != nil {
 			return err
@@ -88,7 +91,7 @@ var addPinCmd = &cmds.Command{
 		}
 
 		if !showProgress {
-			added, err := corerepo.Pin(n.Pinning, api, req.Context, req.Arguments, recursive)
+			added, err := corerepo.Pin(n.Pinning, api, ctx, req.Arguments, recursive)
 			if err != nil {
 				return err
 			}
@@ -96,7 +99,7 @@ var addPinCmd = &cmds.Command{
 		}
 
 		v := new(dag.ProgressTracker)
-		ctx := v.DeriveContext(req.Context)
+		ctx = v.DeriveContext(ctx)
 
 		type pinResult struct {
 			pins []cid.Cid

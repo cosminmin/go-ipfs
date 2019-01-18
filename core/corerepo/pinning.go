@@ -16,7 +16,9 @@ package corerepo
 import (
 	"context"
 	"fmt"
+
 	"github.com/ipfs/go-ipfs/pin"
+	"go.opencensus.io/trace"
 
 	"github.com/ipfs/go-ipfs/core/coreapi/interface"
 
@@ -24,6 +26,8 @@ import (
 )
 
 func Pin(pinning pin.Pinner, api iface.CoreAPI, ctx context.Context, paths []string, recursive bool) ([]cid.Cid, error) {
+	ctx, span := trace.StartSpan(ctx, "corerepo/Pin")
+	defer span.End()
 	out := make([]cid.Cid, len(paths))
 
 	for i, fpath := range paths {
@@ -52,6 +56,8 @@ func Pin(pinning pin.Pinner, api iface.CoreAPI, ctx context.Context, paths []str
 }
 
 func Unpin(pinning pin.Pinner, api iface.CoreAPI, ctx context.Context, paths []string, recursive bool) ([]cid.Cid, error) {
+	ctx, span := trace.StartSpan(ctx, "corerepo/Unpin")
+	defer span.End()
 	unpinned := make([]cid.Cid, len(paths))
 
 	for i, p := range paths {

@@ -13,6 +13,7 @@ import (
 	coredag "github.com/ipfs/go-ipfs/core/coredag"
 
 	cid "gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
+	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/trace"
 	ipld "gx/ipfs/QmcKKBwfz6FyQdHR2jsXrrF6XeSBXYL86anmWNewpFpoF5/go-ipld-format"
 )
 
@@ -29,6 +30,8 @@ type dagBatch struct {
 // `WithCodes` or `WithHash`, the defaults "dag-cbor" and "sha256" are used.
 // Returns the path of the inserted data.
 func (api *DagAPI) Put(ctx context.Context, src io.Reader, opts ...caopts.DagPutOption) (coreiface.ResolvedPath, error) {
+	ctx, span := trace.StartSpan(ctx, "dagapi/Put")
+	defer span.End()
 	nd, err := getNode(src, opts...)
 	if err != nil {
 		return nil, err
@@ -44,11 +47,15 @@ func (api *DagAPI) Put(ctx context.Context, src io.Reader, opts ...caopts.DagPut
 
 // Get resolves `path` using Unixfs resolver, returns the resolved Node.
 func (api *DagAPI) Get(ctx context.Context, path coreiface.Path) (ipld.Node, error) {
+	ctx, span := trace.StartSpan(ctx, "dagapi/Get")
+	defer span.End()
 	return api.core().ResolveNode(ctx, path)
 }
 
 // Tree returns list of paths within a node specified by the path `p`.
 func (api *DagAPI) Tree(ctx context.Context, p coreiface.Path, opts ...caopts.DagTreeOption) ([]coreiface.Path, error) {
+	ctx, span := trace.StartSpan(ctx, "dagapi/Tree")
+	defer span.End()
 	settings, err := caopts.DagTreeOptions(opts...)
 	if err != nil {
 		return nil, err
@@ -72,6 +79,8 @@ func (api *DagAPI) Tree(ctx context.Context, p coreiface.Path, opts ...caopts.Da
 
 // Batch creates new DagBatch
 func (api *DagAPI) Batch(ctx context.Context) coreiface.DagBatch {
+	ctx, span := trace.StartSpan(ctx, "dagapi/Batch")
+	defer span.End()
 	return &dagBatch{api: api}
 }
 
@@ -79,6 +88,8 @@ func (api *DagAPI) Batch(ctx context.Context) coreiface.DagBatch {
 // `WithCodes` or `WithHash`, the defaults "dag-cbor" and "sha256" are used.
 // Returns the path of the inserted data.
 func (b *dagBatch) Put(ctx context.Context, src io.Reader, opts ...caopts.DagPutOption) (coreiface.ResolvedPath, error) {
+	ctx, span := trace.StartSpan(ctx, "dagbatch/Put")
+	defer span.End()
 	nd, err := getNode(src, opts...)
 	if err != nil {
 		return nil, err
@@ -93,6 +104,8 @@ func (b *dagBatch) Put(ctx context.Context, src io.Reader, opts ...caopts.DagPut
 
 // Commit commits nodes to the datastore and announces them to the network
 func (b *dagBatch) Commit(ctx context.Context) error {
+	ctx, span := trace.StartSpan(ctx, "dagbatch/Commit")
+	defer span.End()
 	b.lk.Lock()
 	defer b.lk.Unlock()
 	defer func() {

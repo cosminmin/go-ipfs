@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	merkledag "gx/ipfs/QmTQdH4848iTVCJmKXYyRiK72HufWTLYQQ8iN3JaQ8K1Hq/go-merkledag"
+	bserv "gx/ipfs/QmYPZzd9VqmJDwxUnThfeSbV1Y5o53aVPDijTB7j7rS9Ep/go-blockservice"
+	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/trace"
+
 	coreiface "github.com/ipfs/go-ipfs/core/coreapi/interface"
 	caopts "github.com/ipfs/go-ipfs/core/coreapi/interface/options"
 	corerepo "github.com/ipfs/go-ipfs/core/corerepo"
-	merkledag "gx/ipfs/QmTQdH4848iTVCJmKXYyRiK72HufWTLYQQ8iN3JaQ8K1Hq/go-merkledag"
-	bserv "gx/ipfs/QmYPZzd9VqmJDwxUnThfeSbV1Y5o53aVPDijTB7j7rS9Ep/go-blockservice"
 
 	cid "gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
 	offline "gx/ipfs/QmYZwey1thDTynSrvd6qQkX24UpTka6TFhQ2v569UpoqxD/go-ipfs-exchange-offline"
@@ -17,6 +19,8 @@ import (
 type PinAPI CoreAPI
 
 func (api *PinAPI) Add(ctx context.Context, p coreiface.Path, opts ...caopts.PinAddOption) error {
+	ctx, span := trace.StartSpan(ctx, "pinapi/Add")
+	defer span.End()
 	settings, err := caopts.PinAddOptions(opts...)
 	if err != nil {
 		return err
@@ -38,6 +42,8 @@ func (api *PinAPI) Add(ctx context.Context, p coreiface.Path, opts ...caopts.Pin
 }
 
 func (api *PinAPI) Ls(ctx context.Context, opts ...caopts.PinLsOption) ([]coreiface.Pin, error) {
+	ctx, span := trace.StartSpan(ctx, "pinapi/Ls")
+	defer span.End()
 	settings, err := caopts.PinLsOptions(opts...)
 	if err != nil {
 		return nil, err
@@ -53,6 +59,8 @@ func (api *PinAPI) Ls(ctx context.Context, opts ...caopts.PinLsOption) ([]coreif
 }
 
 func (api *PinAPI) Rm(ctx context.Context, p coreiface.Path) error {
+	ctx, span := trace.StartSpan(ctx, "pinapi/Rm")
+	defer span.End()
 	_, err := corerepo.Unpin(api.pinning, api.core(), ctx, []string{p.String()}, true)
 	if err != nil {
 		return err
@@ -62,6 +70,8 @@ func (api *PinAPI) Rm(ctx context.Context, p coreiface.Path) error {
 }
 
 func (api *PinAPI) Update(ctx context.Context, from coreiface.Path, to coreiface.Path, opts ...caopts.PinUpdateOption) error {
+	ctx, span := trace.StartSpan(ctx, "pinapi/Update")
+	defer span.End()
 	settings, err := caopts.PinUpdateOptions(opts...)
 	if err != nil {
 		return err
@@ -116,6 +126,8 @@ func (n *badNode) Err() error {
 }
 
 func (api *PinAPI) Verify(ctx context.Context) (<-chan coreiface.PinStatus, error) {
+	ctx, span := trace.StartSpan(ctx, "pinapi/Verify")
+	defer span.End()
 	visited := make(map[cid.Cid]*pinStatus)
 	bs := api.blockstore
 	DAG := merkledag.NewDAGService(bserv.New(bs, offline.Exchange(bs)))

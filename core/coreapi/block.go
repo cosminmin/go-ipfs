@@ -13,6 +13,7 @@ import (
 
 	cid "gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
 	blocks "gx/ipfs/QmWoXtvgC8inqFkAATB7cp2Dax7XBi9VDvSg9RCCZufmRk/go-block-format"
+	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/trace"
 )
 
 type BlockAPI CoreAPI
@@ -23,6 +24,8 @@ type BlockStat struct {
 }
 
 func (api *BlockAPI) Put(ctx context.Context, src io.Reader, opts ...caopts.BlockPutOption) (coreiface.BlockStat, error) {
+	ctx, span := trace.StartSpan(ctx, "blockapi/Put")
+	defer span.End()
 	_, pref, err := caopts.BlockPutOptions(opts...)
 	if err != nil {
 		return nil, err
@@ -52,6 +55,8 @@ func (api *BlockAPI) Put(ctx context.Context, src io.Reader, opts ...caopts.Bloc
 }
 
 func (api *BlockAPI) Get(ctx context.Context, p coreiface.Path) (io.Reader, error) {
+	ctx, span := trace.StartSpan(ctx, "blockapi/Get")
+	defer span.End()
 	rp, err := api.core().ResolvePath(ctx, p)
 	if err != nil {
 		return nil, err
@@ -66,6 +71,8 @@ func (api *BlockAPI) Get(ctx context.Context, p coreiface.Path) (io.Reader, erro
 }
 
 func (api *BlockAPI) Rm(ctx context.Context, p coreiface.Path, opts ...caopts.BlockRmOption) error {
+	ctx, span := trace.StartSpan(ctx, "blockapi/Rm")
+	defer span.End()
 	rp, err := api.core().ResolvePath(ctx, p)
 	if err != nil {
 		return err
@@ -104,6 +111,8 @@ func (api *BlockAPI) Rm(ctx context.Context, p coreiface.Path, opts ...caopts.Bl
 }
 
 func (api *BlockAPI) Stat(ctx context.Context, p coreiface.Path) (coreiface.BlockStat, error) {
+	ctx, span := trace.StartSpan(ctx, "blockapi/Put")
+	defer span.End()
 	rp, err := api.core().ResolvePath(ctx, p)
 	if err != nil {
 		return nil, err

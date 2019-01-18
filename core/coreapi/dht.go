@@ -15,12 +15,15 @@ import (
 	peer "gx/ipfs/QmY5Grm8pJdiSSVsYxx4uNRgweY72EmYwuSDbRnbFok3iY/go-libp2p-peer"
 	blockservice "gx/ipfs/QmYPZzd9VqmJDwxUnThfeSbV1Y5o53aVPDijTB7j7rS9Ep/go-blockservice"
 	offline "gx/ipfs/QmYZwey1thDTynSrvd6qQkX24UpTka6TFhQ2v569UpoqxD/go-ipfs-exchange-offline"
+	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/trace"
 	cidutil "gx/ipfs/QmbfKu17LbMWyGUxHEUns9Wf5Dkm8PT6be4uPhTkk4YvaV/go-cidutil"
 )
 
 type DhtAPI CoreAPI
 
 func (api *DhtAPI) FindPeer(ctx context.Context, p peer.ID) (pstore.PeerInfo, error) {
+	ctx, span := trace.StartSpan(ctx, "dhtapi/FindPeer")
+	defer span.End()
 	err := api.checkOnline(false)
 	if err != nil {
 		return pstore.PeerInfo{}, err
@@ -35,6 +38,8 @@ func (api *DhtAPI) FindPeer(ctx context.Context, p peer.ID) (pstore.PeerInfo, er
 }
 
 func (api *DhtAPI) FindProviders(ctx context.Context, p coreiface.Path, opts ...caopts.DhtFindProvidersOption) (<-chan pstore.PeerInfo, error) {
+	ctx, span := trace.StartSpan(ctx, "dhtapi/FindProviders")
+	defer span.End()
 	settings, err := caopts.DhtFindProvidersOptions(opts...)
 	if err != nil {
 		return nil, err
@@ -60,6 +65,8 @@ func (api *DhtAPI) FindProviders(ctx context.Context, p coreiface.Path, opts ...
 }
 
 func (api *DhtAPI) Provide(ctx context.Context, path coreiface.Path, opts ...caopts.DhtProvideOption) error {
+	ctx, span := trace.StartSpan(ctx, "dhtapi/Provide")
+	defer span.End()
 	settings, err := caopts.DhtProvideOptions(opts...)
 	if err != nil {
 		return err

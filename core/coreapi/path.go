@@ -19,7 +19,7 @@ import (
 // ResolveNode resolves the path `p` using Unixfs resolver, gets and returns the
 // resolved Node.
 func (api *CoreAPI) ResolveNode(ctx context.Context, p coreiface.Path) (ipld.Node, error) {
-	ctx, span := trace.StartSpan(ctx, "core/ResolveNode")
+	ctx, span := trace.StartSpan(ctx, "coreapi/ResolveNode")
 	defer span.End()
 	rp, err := api.ResolvePath(ctx, p)
 	if err != nil {
@@ -36,7 +36,7 @@ func (api *CoreAPI) ResolveNode(ctx context.Context, p coreiface.Path) (ipld.Nod
 // ResolvePath resolves the path `p` using Unixfs resolver, returns the
 // resolved path.
 func (api *CoreAPI) ResolvePath(ctx context.Context, p coreiface.Path) (coreiface.ResolvedPath, error) {
-	ctx, span := trace.StartSpan(ctx, "core/ResolvePath")
+	ctx, span := trace.StartSpan(ctx, "coreapi/ResolvePath")
 	defer span.End()
 	if _, ok := p.(coreiface.ResolvedPath); ok {
 		return p.(coreiface.ResolvedPath), nil

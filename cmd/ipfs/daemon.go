@@ -5,7 +5,7 @@ import (
 	"expvar"
 	"fmt"
 	"net/http"
-	_ "net/http/pprof"
+	"net/http/pprof"
 	"os"
 	"runtime"
 	"sort"
@@ -194,18 +194,19 @@ Headers.
 // }
 
 func daemonFunc(req *cmds.Request, re cmds.ResponseEmitter, env cmds.Environment) (_err error) {
-	metricsCfg := &observations.MetricsConfig{
-		PrometheusEndpoint:     ":8889",
-		StatsReportingInterval: 2 * time.Second,
-	}
-	// tracingCfg := &observations.TracingConfig{
-	// 	JaegerAgentEndpoint:     "0.0.0.0:6831",
-	// 	JaegerCollectorEndpoint: "http://0.0.0.0:14268",
-	// 	TracingSamplingProb:     0.3,
-	// 	TracingServiceName:      "ipfs-daemon",
+	// promEndpoint, _ := ma.NewMultiaddr("/ip4/0.0.0.0/tcp/8889")
+	// metricsCfg := &observations.MetricsConfig{
+	// 	PrometheusEndpoint:     promEndpoint,
+	// 	StatsReportingInterval: 2 * time.Second,
 	// }
-	fmt.Println("oc prom starting...")
-	setupMetrics(metricsCfg)
+	// agentEndpoint, _ := ma.NewMultiaddr("/ip4/0.0.0.0/udp/6831")
+	// tracingCfg := &observations.TracingConfig{
+	// 	JaegerAgentEndpoint: agentEndpoint,
+	// 	TracingSamplingProb: 0.3,
+	// 	TracingServiceName:  "ipfs-daemon",
+	// }
+	// fmt.Println("oc prom starting...")
+	// setupMetrics(metricsCfg)
 	// fmt.Println("oc jaeger starting...")
 	// setupTracing(tracingCfg)
 
@@ -785,22 +786,26 @@ func setupMetrics(cfg *observations.MetricsConfig) {
 		log.Fatalf("failed to register views: %v", err)
 	}
 
+	_, promAddr, err := manet.DialArgs(cfg.PrometheusEndpoint)
+	if err != nil {
+		log.Fatalf("Failed to parse multiaddr to ip:port: %v\n", err)
+	}
 	go func() {
 		mux := http.NewServeMux()
 		zpages.Handle(mux, "/debug")
 		mux.Handle("/metrics", pe)
 		mux.Handle("/debug/vars", expvar.Handler())
-		// mux.HandleFunc("/debug/pprof", pprof.Index)
-		// mux.HandleFunc("/debug/cmdline", pprof.Cmdline)
-		// mux.HandleFunc("/debug/profile", pprof.Profile)
-		// mux.HandleFunc("/debug/symbol", pprof.Symbol)
-		// mux.HandleFunc("/debug/trace", pprof.Trace)
-		// mux.Handle("/debug/block", pprof.Handler("block"))
-		// mux.Handle("/debug/goroutine", pprof.Handler("goroutine"))
-		// mux.Handle("/debug/heap", pprof.Handler("heap"))
-		// mux.Handle("/debug/mutex", pprof.Handler("mutex"))
-		// mux.Handle("/debug/threadcreate", pprof.Handler("threadcreate"))
-		if err := http.ListenAndServe(cfg.PrometheusEndpoint, mux); err != nil {
+		mux.HandleFunc("/debug/pprof", pprof.Index)
+		mux.HandleFunc("/debug/cmdline", pprof.Cmdline)
+		mux.HandleFunc("/debug/profile", pprof.Profile)
+		mux.HandleFunc("/debug/symbol", pprof.Symbol)
+		mux.HandleFunc("/debug/trace", pprof.Trace)
+		mux.Handle("/debug/block", pprof.Handler("block"))
+		mux.Handle("/debug/goroutine", pprof.Handler("goroutine"))
+		mux.Handle("/debug/heap", pprof.Handler("heap"))
+		mux.Handle("/debug/mutex", pprof.Handler("mutex"))
+		mux.Handle("/debug/threadcreate", pprof.Handler("threadcreate"))
+		if err := http.ListenAndServe(promAddr, mux); err != nil {
 			log.Fatalf("Failed to run Prometheus /metrics endpoint: %v", err)
 		}
 	}()
@@ -809,9 +814,13 @@ func setupMetrics(cfg *observations.MetricsConfig) {
 // setupTracing configures a OpenCensus Tracing exporter for Jaeger.
 func setupTracing(cfg *observations.TracingConfig) *jaeger.Exporter {
 	fmt.Print("setting up tracing...\n")
+	_, agentAddr, err := manet.DialArgs(cfg.JaegerAgentEndpoint)
+	if err != nil {
+		log.Fatalf("Failed to parse multiaddr to ip:port: %v\n", err)
+	}
 	// setup Jaeger
 	je, err := jaeger.NewExporter(jaeger.Options{
-		AgentEndpoint: cfg.JaegerAgentEndpoint,
+		AgentEndpoint: agentAddr,
 		ServiceName:   cfg.TracingServiceName,
 	})
 	if err != nil {

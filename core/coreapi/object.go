@@ -19,6 +19,7 @@ import (
 	ft "gx/ipfs/QmQXze9tG878pa4Euya4rrDpyTNX3kQe4dhCaBzBozGgpe/go-unixfs"
 	cid "gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
 	dag "gx/ipfs/QmTQdH4848iTVCJmKXYyRiK72HufWTLYQQ8iN3JaQ8K1Hq/go-merkledag"
+	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/trace"
 	ipld "gx/ipfs/QmcKKBwfz6FyQdHR2jsXrrF6XeSBXYL86anmWNewpFpoF5/go-ipld-format"
 )
 
@@ -37,6 +38,8 @@ type Node struct {
 }
 
 func (api *ObjectAPI) New(ctx context.Context, opts ...caopts.ObjectNewOption) (ipld.Node, error) {
+	ctx, span := trace.StartSpan(ctx, "objectapi/New")
+	defer span.End()
 	options, err := caopts.ObjectNewOptions(opts...)
 	if err != nil {
 		return nil, err
@@ -58,6 +61,8 @@ func (api *ObjectAPI) New(ctx context.Context, opts ...caopts.ObjectNewOption) (
 }
 
 func (api *ObjectAPI) Put(ctx context.Context, src io.Reader, opts ...caopts.ObjectPutOption) (coreiface.ResolvedPath, error) {
+	ctx, span := trace.StartSpan(ctx, "objectapi/Put")
+	defer span.End()
 	options, err := caopts.ObjectPutOptions(opts...)
 	if err != nil {
 		return nil, err
@@ -138,10 +143,14 @@ func (api *ObjectAPI) Put(ctx context.Context, src io.Reader, opts ...caopts.Obj
 }
 
 func (api *ObjectAPI) Get(ctx context.Context, path coreiface.Path) (ipld.Node, error) {
+	ctx, span := trace.StartSpan(ctx, "objectapi/Get")
+	defer span.End()
 	return api.core().ResolveNode(ctx, path)
 }
 
 func (api *ObjectAPI) Data(ctx context.Context, path coreiface.Path) (io.Reader, error) {
+	ctx, span := trace.StartSpan(ctx, "objectapi/Data")
+	defer span.End()
 	nd, err := api.core().ResolveNode(ctx, path)
 	if err != nil {
 		return nil, err
@@ -156,6 +165,8 @@ func (api *ObjectAPI) Data(ctx context.Context, path coreiface.Path) (io.Reader,
 }
 
 func (api *ObjectAPI) Links(ctx context.Context, path coreiface.Path) ([]*ipld.Link, error) {
+	ctx, span := trace.StartSpan(ctx, "objectapi/Links")
+	defer span.End()
 	nd, err := api.core().ResolveNode(ctx, path)
 	if err != nil {
 		return nil, err
@@ -171,6 +182,8 @@ func (api *ObjectAPI) Links(ctx context.Context, path coreiface.Path) ([]*ipld.L
 }
 
 func (api *ObjectAPI) Stat(ctx context.Context, path coreiface.Path) (*coreiface.ObjectStat, error) {
+	ctx, span := trace.StartSpan(ctx, "objectapi/Stat")
+	defer span.End()
 	nd, err := api.core().ResolveNode(ctx, path)
 	if err != nil {
 		return nil, err
@@ -194,6 +207,8 @@ func (api *ObjectAPI) Stat(ctx context.Context, path coreiface.Path) (*coreiface
 }
 
 func (api *ObjectAPI) AddLink(ctx context.Context, base coreiface.Path, name string, child coreiface.Path, opts ...caopts.ObjectAddLinkOption) (coreiface.ResolvedPath, error) {
+	ctx, span := trace.StartSpan(ctx, "objectapi/AddLink")
+	defer span.End()
 	options, err := caopts.ObjectAddLinkOptions(opts...)
 	if err != nil {
 		return nil, err
@@ -235,6 +250,8 @@ func (api *ObjectAPI) AddLink(ctx context.Context, base coreiface.Path, name str
 }
 
 func (api *ObjectAPI) RmLink(ctx context.Context, base coreiface.Path, link string) (coreiface.ResolvedPath, error) {
+	ctx, span := trace.StartSpan(ctx, "objectapi/RmLink")
+	defer span.End()
 	baseNd, err := api.core().ResolveNode(ctx, base)
 	if err != nil {
 		return nil, err
@@ -261,10 +278,14 @@ func (api *ObjectAPI) RmLink(ctx context.Context, base coreiface.Path, link stri
 }
 
 func (api *ObjectAPI) AppendData(ctx context.Context, path coreiface.Path, r io.Reader) (coreiface.ResolvedPath, error) {
+	ctx, span := trace.StartSpan(ctx, "objectapi/AppendData")
+	defer span.End()
 	return api.patchData(ctx, path, r, true)
 }
 
 func (api *ObjectAPI) SetData(ctx context.Context, path coreiface.Path, r io.Reader) (coreiface.ResolvedPath, error) {
+	ctx, span := trace.StartSpan(ctx, "objectapi/SetData")
+	defer span.End()
 	return api.patchData(ctx, path, r, false)
 }
 
@@ -298,6 +319,8 @@ func (api *ObjectAPI) patchData(ctx context.Context, path coreiface.Path, r io.R
 }
 
 func (api *ObjectAPI) Diff(ctx context.Context, before coreiface.Path, after coreiface.Path) ([]coreiface.ObjectChange, error) {
+	ctx, span := trace.StartSpan(ctx, "objectapi/Diff")
+	defer span.End()
 	beforeNd, err := api.core().ResolveNode(ctx, before)
 	if err != nil {
 		return nil, err
