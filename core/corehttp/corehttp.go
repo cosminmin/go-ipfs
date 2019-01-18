@@ -11,12 +11,17 @@ import (
 	"net/http"
 	"time"
 
-	core "github.com/ipfs/go-ipfs/core"
 	ma "gx/ipfs/QmNTCey11oxhb1AxDnQBRHtdhap6Ctud872NjAYPYYXPuc/go-multiaddr"
 	"gx/ipfs/QmSF8fPo3jgVBAy8fpdjjYqgG87dkJgUprRBHRd2tmfgpP/goprocess"
 	periodicproc "gx/ipfs/QmSF8fPo3jgVBAy8fpdjjYqgG87dkJgUprRBHRd2tmfgpP/goprocess/periodic"
 	manet "gx/ipfs/QmZcLBXKaFe8ND5YHPkJRAwmhJGrVsi1JqDZNyJ4nRK5Mj/go-multiaddr-net"
 	logging "gx/ipfs/QmcuXC5cxs79ro2cUuHs4HQ2bkDLJUYokwL8aivcX6HW3C/go-log"
+
+	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/plugin/ochttp"
+	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/plugin/ochttp/propagation/tracecontext"
+	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/trace"
+
+	core "github.com/ipfs/go-ipfs/core"
 )
 
 var log = logging.Logger("core/server")
@@ -43,7 +48,17 @@ func makeHandler(n *core.IpfsNode, l net.Listener, options ...ServeOption) (http
 			return nil, err
 		}
 	}
-	return topMux, nil
+
+	// putting ochttp here for now as it returns a http.Handler
+	// and so doesn't simply fit the ServerOption func.
+	ochandler := &ochttp.Handler{
+		IsPublicEndpoint: true,
+		Propagation:      &tracecontext.HTTPFormat{},
+		Handler:          topMux,
+		StartOptions:     trace.StartOptions{SpanKind: trace.SpanKindServer},
+		FormatSpanName:   func(req *http.Request) string { return req.Host + ":" + req.URL.Path + ":" + req.Method },
+	}
+	return ochandler, nil
 }
 
 // ListenAndServe runs an HTTP server listening at |listeningMultiAddr| with

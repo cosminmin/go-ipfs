@@ -2,15 +2,22 @@ package main
 
 import (
 	"errors"
-	_ "expvar"
+	"expvar"
 	"fmt"
-	"net"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
 	"runtime"
 	"sort"
 	"sync"
+	"time"
+
+	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/exporter/jaeger"
+	ocprom "gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/exporter/prometheus"
+	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/plugin/ochttp"
+	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/stats/view"
+	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/trace"
+	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/zpages"
 
 	version "github.com/ipfs/go-ipfs"
 	utilmain "github.com/ipfs/go-ipfs/cmd/ipfs/util"
@@ -22,10 +29,10 @@ import (
 	nodeMount "github.com/ipfs/go-ipfs/fuse/node"
 	fsrepo "github.com/ipfs/go-ipfs/repo/fsrepo"
 	migrate "github.com/ipfs/go-ipfs/repo/fsrepo/migrations"
+	"github.com/ipfs/ipfs-cluster/observations"
 
 	ma "gx/ipfs/QmNTCey11oxhb1AxDnQBRHtdhap6Ctud872NjAYPYYXPuc/go-multiaddr"
-	"gx/ipfs/QmTQuFQWHAWy4wMH6ZyPfGiawA5u9T8rs79FENoV8yXaoS/client_golang/prometheus"
-	mprome "gx/ipfs/QmVMcMs6duiwLzvhF6xWM3yc4GgjpNoctKFhvtBch5tpgo/go-metrics-prometheus"
+	"gx/ipfs/QmQouwMg4U6jGKWkytrs36YrsuAaGMq5c1nU9HFtrtMdU3/client_golang/prometheus"
 	cmds "gx/ipfs/QmWGm4AbZEbnmdgVTza52MSNpEmBdFVqzmAysRbjrRyGbH/go-ipfs-cmds"
 	"gx/ipfs/QmZcLBXKaFe8ND5YHPkJRAwmhJGrVsi1JqDZNyJ4nRK5Mj/go-multiaddr-net"
 	"gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
@@ -178,19 +185,33 @@ Headers.
 // mostly useful to hook up things that register in the default muxer,
 // and don't provide a convenient http.Handler entry point, such as
 // expvar and http/pprof.
-func defaultMux(path string) corehttp.ServeOption {
-	return func(node *core.IpfsNode, _ net.Listener, mux *http.ServeMux) (*http.ServeMux, error) {
-		mux.Handle(path, http.DefaultServeMux)
-		return mux, nil
-	}
-}
+// func defaultMux(path string) corehttp.ServeOption {
+// 	return func(node *core.IpfsNode, _ net.Listener, mux *http.ServeMux) (*http.ServeMux, error) {
+// 		mux.Handle(path, http.DefaultServeMux)
+// 		return mux, nil
+// 	}
+// }
 
 func daemonFunc(req *cmds.Request, re cmds.ResponseEmitter, env cmds.Environment) (_err error) {
-	// Inject metrics before we do anything
-	err := mprome.Inject()
-	if err != nil {
-		log.Errorf("Injecting prometheus handler for metrics failed with message: %s\n", err.Error())
+	metricsCfg := &observations.MetricsConfig{
+		PrometheusEndpoint:     ":8889",
+		StatsReportingInterval: 2 * time.Second,
 	}
+	tracingCfg := &observations.TracingConfig{
+		JaegerAgentEndpoint:     "0.0.0.0:6831",
+		JaegerCollectorEndpoint: "http://0.0.0.0:14268",
+		TracingSamplingProb:     0.3,
+		TracingServiceName:      "ipfs-daemon",
+	}
+	fmt.Println("oc prom starting...")
+	setupMetrics(metricsCfg)
+	fmt.Println("oc jaeger starting...")
+	setupTracing(tracingCfg)
+	// // Inject metrics before we do anything
+	// err := mprome.Inject()
+	// if err != nil {
+	// 	log.Errorf("Injecting prometheus handler for metrics failed with message: %s\n", err.Error())
+	// }
 
 	// let the user know we're going.
 	fmt.Printf("Initializing daemon...\n")
@@ -389,7 +410,7 @@ func daemonFunc(req *cmds.Request, re cmds.ResponseEmitter, env cmds.Environment
 	}
 
 	// initialize metrics collector
-	prometheus.MustRegister(&corehttp.IpfsNodeCollector{Node: node})
+	// prometheus.MustRegister(&corehttp.IpfsNodeCollector{Node: node})
 
 	fmt.Printf("Daemon is ready\n")
 
@@ -456,16 +477,16 @@ func serveHTTPApi(req *cmds.Request, cctx *oldcmds.Context) (<-chan error, error
 	}
 
 	var opts = []corehttp.ServeOption{
-		corehttp.MetricsCollectionOption("api"),
+		// corehttp.MetricsCollectionOption("api"),
 		corehttp.CheckVersionOption(),
 		corehttp.CommandsOption(*cctx),
 		corehttp.WebUIOption,
 		gatewayOpt,
 		corehttp.VersionOption(),
-		defaultMux("/debug/vars"),
-		defaultMux("/debug/pprof/"),
-		corehttp.MutexFractionOption("/debug/pprof-mutex/"),
-		corehttp.MetricsScrapingOption("/debug/metrics/prometheus"),
+		// defaultMux("/debug/vars"),
+		// defaultMux("/debug/pprof/"),
+		// corehttp.MutexFractionOption("/debug/pprof-mutex/"),
+		// corehttp.MetricsScrapingOption("/debug/metrics/prometheus"),
 		corehttp.LogOption(),
 	}
 
@@ -571,7 +592,7 @@ func serveHTTPGateway(req *cmds.Request, cctx *oldcmds.Context) (<-chan error, e
 	cmdctx.Gateway = true
 
 	var opts = []corehttp.ServeOption{
-		corehttp.MetricsCollectionOption("gateway"),
+		// corehttp.MetricsCollectionOption("gateway"),
 		corehttp.IPNSHostnameOption(),
 		corehttp.GatewayOption(writable, "/ipfs", "/ipns"),
 		corehttp.VersionOption(),
@@ -709,4 +730,86 @@ func printVersion() {
 	fmt.Printf("Repo version: %d\n", fsrepo.RepoVersion)
 	fmt.Printf("System version: %s\n", runtime.GOARCH+"/"+runtime.GOOS)
 	fmt.Printf("Golang version: %s\n", runtime.Version())
+}
+
+func setupMetrics(cfg *observations.MetricsConfig) {
+	fmt.Print("setting up metrics...\n")
+	// setup Prometheus
+	registry := prometheus.NewRegistry()
+	goCollector := prometheus.NewGoCollector()
+	procCollector := prometheus.NewProcessCollector(os.Getpid(), "")
+	registry.MustRegister(goCollector, procCollector)
+	pe, err := ocprom.NewExporter(ocprom.Options{
+		Namespace: "go_ipfs",
+		Registry:  registry,
+	})
+	if err != nil {
+		log.Fatalf("Failed to create Prometheus exporter: %v", err)
+	}
+
+	// register prometheus with opencensus
+	view.RegisterExporter(pe)
+	view.SetReportingPeriod(cfg.StatsReportingInterval)
+
+	// register the metrics views of interest
+	// if err := view.Register(DefaultViews...); err != nil {
+	// 	log.Fatalf("failed to register views: %v", err)
+	// }
+	if err := view.Register(
+		ochttp.ClientCompletedCount,
+		ochttp.ClientRoundtripLatencyDistribution,
+		ochttp.ClientReceivedBytesDistribution,
+		ochttp.ClientSentBytesDistribution,
+	); err != nil {
+		log.Fatalf("failed to register views: %v", err)
+	}
+	if err := view.Register(
+		ochttp.ServerRequestCountView,
+		ochttp.ServerRequestBytesView,
+		ochttp.ServerResponseBytesView,
+		ochttp.ServerLatencyView,
+		ochttp.ServerRequestCountByMethod,
+		ochttp.ServerResponseCountByStatusCode,
+	); err != nil {
+		log.Fatalf("failed to register views: %v", err)
+	}
+
+	go func() {
+		mux := http.NewServeMux()
+		zpages.Handle(mux, "/debug")
+		mux.Handle("/metrics", pe)
+		mux.Handle("/debug/vars", expvar.Handler())
+		// mux.HandleFunc("/debug/pprof", pprof.Index)
+		// mux.HandleFunc("/debug/cmdline", pprof.Cmdline)
+		// mux.HandleFunc("/debug/profile", pprof.Profile)
+		// mux.HandleFunc("/debug/symbol", pprof.Symbol)
+		// mux.HandleFunc("/debug/trace", pprof.Trace)
+		// mux.Handle("/debug/block", pprof.Handler("block"))
+		// mux.Handle("/debug/goroutine", pprof.Handler("goroutine"))
+		// mux.Handle("/debug/heap", pprof.Handler("heap"))
+		// mux.Handle("/debug/mutex", pprof.Handler("mutex"))
+		// mux.Handle("/debug/threadcreate", pprof.Handler("threadcreate"))
+		if err := http.ListenAndServe(cfg.PrometheusEndpoint, mux); err != nil {
+			log.Fatalf("Failed to run Prometheus /metrics endpoint: %v", err)
+		}
+	}()
+}
+
+// setupTracing configures a OpenCensus Tracing exporter for Jaeger.
+func setupTracing(cfg *observations.TracingConfig) *jaeger.Exporter {
+	fmt.Print("setting up tracing...\n")
+	// setup Jaeger
+	je, err := jaeger.NewExporter(jaeger.Options{
+		AgentEndpoint: cfg.JaegerAgentEndpoint,
+		ServiceName:   cfg.TracingServiceName,
+	})
+	if err != nil {
+		log.Fatalf("Failed to create the Jaeger exporter: %v", err)
+	}
+
+	// register jaeger with opencensus
+	trace.RegisterExporter(je)
+	// configure tracing
+	trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
+	return je
 }

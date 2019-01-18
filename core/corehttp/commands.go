@@ -13,6 +13,7 @@ import (
 	oldcmds "github.com/ipfs/go-ipfs/commands"
 	"github.com/ipfs/go-ipfs/core"
 	corecommands "github.com/ipfs/go-ipfs/core/commands"
+	"gx/ipfs/QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC/opencensus-go/plugin/ochttp"
 
 	path "gx/ipfs/QmNYPETsdAu2uQ1k9q9S1jYEGURaLHV6cbYRSVFVRftpF8/go-path"
 	cmds "gx/ipfs/QmWGm4AbZEbnmdgVTza52MSNpEmBdFVqzmAysRbjrRyGbH/go-ipfs-cmds"
@@ -136,7 +137,7 @@ func commandsOption(cctx oldcmds.Context, command *cmds.Command) ServeOption {
 		patchCORSVars(cfg, l.Addr())
 
 		cmdHandler := cmdsHttp.NewHandler(&cctx, command, cfg)
-		mux.Handle(APIPath+"/", cmdHandler)
+		mux.Handle(APIPath+"/", ochttp.WithRouteTag(cmdHandler, "/"))
 		return mux, nil
 	}
 }

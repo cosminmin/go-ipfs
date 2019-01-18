@@ -42,9 +42,9 @@
       "version": "0.0.0"
     },
     {
-      "hash": "QmTQuFQWHAWy4wMH6ZyPfGiawA5u9T8rs79FENoV8yXaoS",
+      "hash": "QmQouwMg4U6jGKWkytrs36YrsuAaGMq5c1nU9HFtrtMdU3",
       "name": "client_golang",
-      "version": "0.1.4"
+      "version": "0.1.5"
     },
     {
       "hash": "QmckeQ2zrYLAXoSHYTGn5BDdb22BqbUoHEHm8KZ9YWRxd1",
@@ -605,6 +605,12 @@
       "hash": "QmRmMbeY5QC5iMsuW16wchtFt8wmYTv2suWb8t9MV8dsxm",
       "name": "go-libp2p-autonat-svc",
       "version": "1.0.5"
+    },
+    {
+      "author": "lanzafame",
+      "hash": "QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC",
+      "name": "opencensus-go",
+      "version": "0.0.1"
     }
   ],
   "gxVersion": "0.10.0",
