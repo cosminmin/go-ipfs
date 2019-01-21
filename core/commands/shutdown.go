@@ -3,8 +3,8 @@ package commands
 import (
 	cmdenv "github.com/ipfs/go-ipfs/core/commands/cmdenv"
 
-	cmds "gx/ipfs/QmWGm4AbZEbnmdgVTza52MSNpEmBdFVqzmAysRbjrRyGbH/go-ipfs-cmds"
 	"gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
+	cmds "gx/ipfs/QmfUm9hpamNWvkmeFNAakDKsDpvMx3tzUqMSsTEq7Ve4jD/go-ipfs-cmds"
 )
 
 var daemonShutdownCmd = &cmds.Command{

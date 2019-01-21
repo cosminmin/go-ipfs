@@ -295,9 +295,9 @@
       "version": "3.0.28"
     },
     {
-      "hash": "QmWGm4AbZEbnmdgVTza52MSNpEmBdFVqzmAysRbjrRyGbH",
+      "hash": "QmfUm9hpamNWvkmeFNAakDKsDpvMx3tzUqMSsTEq7Ve4jD",
       "name": "go-ipfs-cmds",
-      "version": "2.0.10"
+      "version": "2.0.11"
     },
     {
       "hash": "Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg",
@@ -608,13 +608,13 @@
     },
     {
       "author": "lanzafame",
-      "hash": "QmZGMjvC43zAHEdVuhKxhHMpzAxJh5ajNtMaZ1L5Ko2GCC",
+      "hash": "QmYRHQCRVSznLwaR8kXtVH4KSZU5fqFPPSkxv9xsJV2QCY",
       "name": "opencensus-go",
       "version": "0.0.1"
     },
     {
       "author": "lanzafame",
-      "hash": "Qmc3ySY4x7rPDqU9q1ziw7oK2rGz1kJNR9NtAMbJ6EinnV",
+      "hash": "QmVNSy6m5i3TSQniMgW6t5Mu6KMi6VADPai4R1F8jou9KN",
       "name": "opencensus-go-exporter-datadog",
       "version": "0.0.2"
     }

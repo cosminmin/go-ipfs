@@ -18,7 +18,7 @@ import (
 	"fmt"
 
 	"github.com/ipfs/go-ipfs/pin"
-	"go.opencensus.io/trace"
+	"gx/ipfs/QmYRHQCRVSznLwaR8kXtVH4KSZU5fqFPPSkxv9xsJV2QCY/opencensus-go/trace"
 
 	"github.com/ipfs/go-ipfs/core/coreapi/interface"
 
