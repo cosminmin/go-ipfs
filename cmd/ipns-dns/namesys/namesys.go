@@ -44,7 +44,7 @@ func (n *Namesys) Resolve(ctx context.Context, namepath string, opts ...namesyso
 
 	peercid := cid.NewCidV1(cid.Raw, peerid)
 	peeridb32 := peercid.Encode(multibase.MustNewEncoder(multibase.Base32))
-	domainname := peeridb32 + ".ipns.name"
+	domainname := peeridb32 + ".lars.pub"
 
 	fmt.Printf("dns: lookup: TXT %s\n", domainname)
 	records, err := n.DNS.LookupTXT(ctx, domainname)
@@ -109,9 +109,11 @@ func (n *Namesys) PublishWithEOL(ctx context.Context, privkey p2pcrypto.PrivKey,
 		return err
 	}
 
+	fmt.Printf("publishing to pubsub...\n")
 	if err = n.PubSub.Publish(n.Topic, data); err != nil {
 		return err
 	}
+	fmt.Printf("publishing to pubsub: done\n")
 
 	return nil
 }

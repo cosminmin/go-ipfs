@@ -599,7 +599,16 @@ func (n *IpfsNode) startOnlineServicesWithHost(ctx context.Context, routingOptio
 	// 	return dnsdialer.DialContext(ctx, network, host+":4053")
 	// }
 	// dnsresolver := &net.Resolver{Dial: dnsdial}
-	dnsresolver := net.DefaultResolver
+	dnsdial := func(ctx context.Context, network, address string) (net.Conn, error) {
+		dnsdialer := &net.Dialer{}
+		_, port, err := net.SplitHostPort(address)
+		if err != nil {
+			return nil, err
+		}
+		return dnsdialer.DialContext(ctx, network, "157.230.98.187:"+port)
+	}
+	dnsresolver := &net.Resolver{Dial: dnsdial}
+	// dnsresolver := net.DefaultResolver
 	n.Namesys = dnspubsub.NewNamesys(n.PubSub, dnsresolver, "/ipns/.well-known/all")
 
 	// setup ipns republishing
