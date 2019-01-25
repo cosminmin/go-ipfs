@@ -17,6 +17,10 @@ import (
 	periodicproc "gx/ipfs/QmSF8fPo3jgVBAy8fpdjjYqgG87dkJgUprRBHRd2tmfgpP/goprocess/periodic"
 	manet "gx/ipfs/QmZcLBXKaFe8ND5YHPkJRAwmhJGrVsi1JqDZNyJ4nRK5Mj/go-multiaddr-net"
 	logging "gx/ipfs/QmcuXC5cxs79ro2cUuHs4HQ2bkDLJUYokwL8aivcX6HW3C/go-log"
+
+	"go.opencensus.io/plugin/ochttp"
+	"go.opencensus.io/plugin/ochttp/propagation/tracecontext"
+	"go.opencensus.io/trace"
 )
 
 var log = logging.Logger("core/server")
@@ -43,7 +47,17 @@ func makeHandler(n *core.IpfsNode, l net.Listener, options ...ServeOption) (http
 			return nil, err
 		}
 	}
-	return topMux, nil
+
+	// putting ochttp here for now as it returns a http.Handler
+	// and so doesn't simply fit the ServerOption func.
+	ochandler := &ochttp.Handler{
+		// IsPublicEndpoint: true,
+		Propagation:    &tracecontext.HTTPFormat{},
+		Handler:        topMux,
+		StartOptions:   trace.StartOptions{SpanKind: trace.SpanKindServer},
+		FormatSpanName: func(req *http.Request) string { return req.URL.Path + ":" + req.Method },
+	}
+	return ochandler, nil
 }
 
 // ListenAndServe runs an HTTP server listening at |listeningMultiAddr| with

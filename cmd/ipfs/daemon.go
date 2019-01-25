@@ -11,21 +11,25 @@ import (
 	"runtime"
 	"sort"
 	"sync"
+	"time"
+
+	datadog "github.com/DataDog/opencensus-go-exporter-datadog"
+	"go.opencensus.io/plugin/ochttp"
+	"go.opencensus.io/stats/view"
+	"go.opencensus.io/trace"
 
 	version "github.com/ipfs/go-ipfs"
 	utilmain "github.com/ipfs/go-ipfs/cmd/ipfs/util"
 	oldcmds "github.com/ipfs/go-ipfs/commands"
 	"github.com/ipfs/go-ipfs/core"
-	commands "github.com/ipfs/go-ipfs/core/commands"
-	corehttp "github.com/ipfs/go-ipfs/core/corehttp"
-	corerepo "github.com/ipfs/go-ipfs/core/corerepo"
+	"github.com/ipfs/go-ipfs/core/commands"
+	"github.com/ipfs/go-ipfs/core/corehttp"
+	"github.com/ipfs/go-ipfs/core/corerepo"
 	nodeMount "github.com/ipfs/go-ipfs/fuse/node"
-	fsrepo "github.com/ipfs/go-ipfs/repo/fsrepo"
+	"github.com/ipfs/go-ipfs/repo/fsrepo"
 	migrate "github.com/ipfs/go-ipfs/repo/fsrepo/migrations"
 
 	ma "gx/ipfs/QmNTCey11oxhb1AxDnQBRHtdhap6Ctud872NjAYPYYXPuc/go-multiaddr"
-	"gx/ipfs/QmTQuFQWHAWy4wMH6ZyPfGiawA5u9T8rs79FENoV8yXaoS/client_golang/prometheus"
-	mprome "gx/ipfs/QmVMcMs6duiwLzvhF6xWM3yc4GgjpNoctKFhvtBch5tpgo/go-metrics-prometheus"
 	cmds "gx/ipfs/QmWGm4AbZEbnmdgVTza52MSNpEmBdFVqzmAysRbjrRyGbH/go-ipfs-cmds"
 	"gx/ipfs/QmZcLBXKaFe8ND5YHPkJRAwmhJGrVsi1JqDZNyJ4nRK5Mj/go-multiaddr-net"
 	"gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
@@ -186,11 +190,15 @@ func defaultMux(path string) corehttp.ServeOption {
 }
 
 func daemonFunc(req *cmds.Request, re cmds.ResponseEmitter, env cmds.Environment) (_err error) {
-	// Inject metrics before we do anything
-	err := mprome.Inject()
-	if err != nil {
-		log.Errorf("Injecting prometheus handler for metrics failed with message: %s\n", err.Error())
-	}
+	fmt.Println("oc datadog tracing/metrics starting...")
+	log.Info("oc datadog tracing/metrics starting...\n")
+	dd := setupDatadogTracingMetrics()
+
+	// // Inject metrics before we do anything
+	// err := mprome.Inject()
+	// if err != nil {
+	// 	log.Errorf("Injecting prometheus handler for metrics failed with message: %s\n", err.Error())
+	// }
 
 	// let the user know we're going.
 	fmt.Printf("Initializing daemon...\n")
@@ -389,13 +397,18 @@ func daemonFunc(req *cmds.Request, re cmds.ResponseEmitter, env cmds.Environment
 	}
 
 	// initialize metrics collector
-	prometheus.MustRegister(&corehttp.IpfsNodeCollector{Node: node})
+	//prometheus.MustRegister(&corehttp.IpfsNodeCollector{Node: node})
 
 	fmt.Printf("Daemon is ready\n")
 
 	// Give the user some immediate feedback when they hit C-c
 	go func() {
 		<-req.Context.Done()
+
+		// Flush stats/traces to datadog agent.
+		// Doing it here as this go func is blocked until a signal is received.
+		dd.Stop()
+
 		fmt.Println("Received interrupt signal, shutting down...")
 		fmt.Println("(Hit ctrl-c again to force-shutdown the daemon.)")
 	}()
@@ -456,16 +469,16 @@ func serveHTTPApi(req *cmds.Request, cctx *oldcmds.Context) (<-chan error, error
 	}
 
 	var opts = []corehttp.ServeOption{
-		corehttp.MetricsCollectionOption("api"),
+		//corehttp.MetricsCollectionOption("api"),
 		corehttp.CheckVersionOption(),
 		corehttp.CommandsOption(*cctx),
 		corehttp.WebUIOption,
 		gatewayOpt,
 		corehttp.VersionOption(),
-		defaultMux("/debug/vars"),
-		defaultMux("/debug/pprof/"),
-		corehttp.MutexFractionOption("/debug/pprof-mutex/"),
-		corehttp.MetricsScrapingOption("/debug/metrics/prometheus"),
+		//defaultMux("/debug/vars"),
+		//defaultMux("/debug/pprof/"),
+		//corehttp.MutexFractionOption("/debug/pprof-mutex/"),
+		//corehttp.MetricsScrapingOption("/debug/metrics/prometheus"),
 		corehttp.LogOption(),
 	}
 
@@ -571,7 +584,7 @@ func serveHTTPGateway(req *cmds.Request, cctx *oldcmds.Context) (<-chan error, e
 	cmdctx.Gateway = true
 
 	var opts = []corehttp.ServeOption{
-		corehttp.MetricsCollectionOption("gateway"),
+		//corehttp.MetricsCollectionOption("gateway"),
 		corehttp.IPNSHostnameOption(),
 		corehttp.GatewayOption(writable, "/ipfs", "/ipns"),
 		corehttp.VersionOption(),
@@ -709,4 +722,42 @@ func printVersion() {
 	fmt.Printf("Repo version: %d\n", fsrepo.RepoVersion)
 	fmt.Printf("System version: %s\n", runtime.GOARCH+"/"+runtime.GOOS)
 	fmt.Printf("Golang version: %s\n", runtime.Version())
+}
+
+func setupDatadogTracingMetrics() *datadog.Exporter {
+	dd, err := datadog.NewExporter(
+		datadog.Options{
+			Namespace: "go_ipfs",
+			Service:   "ipfs-daemon",
+		},
+	)
+	if err != nil {
+		log.Fatalf("Failed to create the Datadog exporter: %v", err)
+	}
+
+	// Register it as a metrics exporter
+	view.RegisterExporter(dd)
+
+	if err := view.Register(
+		ochttp.ServerRequestCountView,
+		ochttp.ServerRequestBytesView,
+		ochttp.ServerResponseBytesView,
+		ochttp.ServerLatencyView,
+		ochttp.ServerRequestCountByMethod,
+		ochttp.ServerResponseCountByStatusCode,
+	); err != nil {
+		log.Fatalf("failed to register views: %v", err)
+	}
+
+	view.SetReportingPeriod(1 * time.Second)
+
+	// Register it as a metrics exporter
+	trace.RegisterExporter(dd)
+
+	// dd requires full control of sampling, so forward all
+	// spans to the dd exporter.
+	trace.ApplyConfig(trace.Config{
+		DefaultSampler: trace.AlwaysSample(),
+	})
+	return dd
 }
