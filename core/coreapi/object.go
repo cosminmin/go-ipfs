@@ -73,15 +73,12 @@ func (api *ObjectAPI) Put(ctx context.Context, src io.Reader, opts ...caopts.Obj
 	switch options.InputEnc {
 	case "json":
 		node := new(Node)
-		err = json.Unmarshal(data, node)
+
+		decoder := json.NewDecoder(bytes.NewReader(data))
+		decoder.DisallowUnknownFields()
+		err = decoder.Decode(node)
 		if err != nil {
 			return nil, err
-		}
-
-		// check that we have data in the Node to add
-		// otherwise we will add the empty object without raising an error
-		if nodeEmpty(node) {
-			return nil, errors.New("no data or links in this node")
 		}
 
 		dagnode, err = deserializeNode(node, options.DataType)
@@ -93,23 +90,22 @@ func (api *ObjectAPI) Put(ctx context.Context, src io.Reader, opts ...caopts.Obj
 		dagnode, err = dag.DecodeProtobuf(data)
 
 	case "xml":
-		node := new(Node)
-		err = xml.Unmarshal(data, node)
+		// only way to detect additional XML nodes...
+		var node struct {
+			Node
+			Any interface{} `xml:",any"`
+		}
+		err = xml.Unmarshal(data, &node)
 		if err != nil {
 			return nil, err
 		}
-
-		// check that we have data in the Node to add
-		// otherwise we will add the empty object without raising an error
-		if nodeEmpty(node) {
-			return nil, errors.New("no data or links in this node")
+		if node.Any != nil {
+			return nil, fmt.Errorf("unknown fields when parsing XML: %#v", node.Any)
 		}
-
-		dagnode, err = deserializeNode(node, options.DataType)
+		dagnode, err = deserializeNode(&node.Node, options.DataType)
 		if err != nil {
 			return nil, err
 		}
-
 	default:
 		return nil, errors.New("unknown object encoding")
 	}
