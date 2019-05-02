@@ -76,7 +76,7 @@ require (
 	github.com/libp2p/go-libp2p-metrics v0.0.1
 	github.com/libp2p/go-libp2p-net v0.0.2
 	github.com/libp2p/go-libp2p-peer v0.1.0
-	github.com/libp2p/go-libp2p-peerstore v0.0.5
+	github.com/libp2p/go-libp2p-peerstore v0.0.6-0.20190502164450-3f09f0829470
 	github.com/libp2p/go-libp2p-pnet v0.0.1
 	github.com/libp2p/go-libp2p-protocol v0.0.1
 	github.com/libp2p/go-libp2p-pubsub v0.0.1
