@@ -15,7 +15,8 @@ func makeSmuxTransportOption(mplexExp bool) libp2p.Option {
 	const mplexID = "/mplex/6.7.0"
 
 	ymxtpt := *yamux.DefaultTransport
-	ymxtpt.AcceptBacklog = 512
+	ymxtpt.AcceptBacklog = 512 // accepting streams can be slow sometimes.
+	ymxtpt.ReadBufSize = 0     // we buffer reads further down.
 
 	if os.Getenv("YAMUX_DEBUG") != "" {
 		ymxtpt.LogOutput = os.Stderr
