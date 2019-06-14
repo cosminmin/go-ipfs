@@ -17,7 +17,7 @@ require (
 	github.com/golangci/golangci-lint v1.16.1-0.20190425135923-692dacb773b7
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/golang-lru v0.5.1
-	github.com/ipfs/go-bitswap v0.1.4
+	github.com/ipfs/go-bitswap v0.1.5-0.20190614190303-a2c78b06f96f
 	github.com/ipfs/go-block-format v0.0.2
 	github.com/ipfs/go-blockservice v0.1.0
 	github.com/ipfs/go-cid v0.0.2
@@ -68,7 +68,7 @@ require (
 	github.com/libp2p/go-libp2p-connmgr v0.1.0
 	github.com/libp2p/go-libp2p-core v0.0.3
 	github.com/libp2p/go-libp2p-http v0.1.2
-	github.com/libp2p/go-libp2p-kad-dht v0.1.0
+	github.com/libp2p/go-libp2p-kad-dht v0.1.1-0.20190614170723-c5322e3c57cd
 	github.com/libp2p/go-libp2p-kbucket v0.2.0
 	github.com/libp2p/go-libp2p-loggables v0.1.0
 	github.com/libp2p/go-libp2p-mplex v0.2.1
