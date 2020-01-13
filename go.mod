@@ -22,6 +22,7 @@ require (
 	github.com/ipfs/go-datastore v0.3.1
 	github.com/ipfs/go-detect-race v0.0.1
 	github.com/ipfs/go-ds-badger v0.2.0
+	github.com/ipfs/go-ds-badger2 v0.0.0-20200108185345-7f650e6b2521
 	github.com/ipfs/go-ds-flatfs v0.3.0
 	github.com/ipfs/go-ds-leveldb v0.4.0
 	github.com/ipfs/go-ds-measure v0.1.0
@@ -44,7 +45,7 @@ require (
 	github.com/ipfs/go-ipld-format v0.0.2
 	github.com/ipfs/go-ipld-git v0.0.2
 	github.com/ipfs/go-ipns v0.0.2
-	github.com/ipfs/go-log v0.0.1
+	github.com/ipfs/go-log v1.0.0
 	github.com/ipfs/go-merkledag v0.3.1
 	github.com/ipfs/go-metrics-interface v0.0.1
 	github.com/ipfs/go-metrics-prometheus v0.0.2
@@ -98,11 +99,9 @@ require (
 	github.com/whyrusleeping/go-sysinfo v0.0.0-20190219211824-4a357d4b90b1
 	github.com/whyrusleeping/multiaddr-filter v0.0.0-20160516205228-e903e4adabd7
 	github.com/whyrusleeping/tar-utils v0.0.0-20180509141711-8c6c8ba81d5c
-	go.uber.org/atomic v1.4.0 // indirect
 	go.uber.org/dig v1.7.0 // indirect
 	go.uber.org/fx v1.9.0
 	go.uber.org/goleak v0.10.0 // indirect
-	go.uber.org/multierr v1.1.0 // indirect
 	go4.org v0.0.0-20190313082347-94abd6928b1d // indirect
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58 // indirect
 	golang.org/x/sys v0.0.0-20190926180325-855e68c8590b
