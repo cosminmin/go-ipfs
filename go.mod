@@ -27,11 +27,11 @@ require (
 	github.com/ipfs/go-ds-measure v0.1.0
 	github.com/ipfs/go-filestore v0.0.3
 	github.com/ipfs/go-fs-lock v0.0.4
-	github.com/ipfs/go-ipfs-blockstore v0.1.1
+	github.com/ipfs/go-ipfs-blockstore v0.1.2
 	github.com/ipfs/go-ipfs-chunker v0.0.3
 	github.com/ipfs/go-ipfs-cmds v0.1.1
 	github.com/ipfs/go-ipfs-config v0.2.0
-	github.com/ipfs/go-ipfs-ds-help v0.0.2-0.20200107180048-11890cc86e62
+	github.com/ipfs/go-ipfs-ds-help v0.1.0
 	github.com/ipfs/go-ipfs-exchange-interface v0.0.1
 	github.com/ipfs/go-ipfs-exchange-offline v0.0.1
 	github.com/ipfs/go-ipfs-files v0.0.6
@@ -99,7 +99,7 @@ require (
 	github.com/whyrusleeping/multiaddr-filter v0.0.0-20160516205228-e903e4adabd7
 	github.com/whyrusleeping/tar-utils v0.0.0-20180509141711-8c6c8ba81d5c
 	go.uber.org/fx v1.10.0
-	golang.org/x/sys v0.0.0-20200124204421-9fbb57f87de9
+	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5
 	gopkg.in/cheggaaa/pb.v1 v1.0.28
 )
 
