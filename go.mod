@@ -25,9 +25,9 @@ require (
 	github.com/ipfs/go-ds-flatfs v0.3.0
 	github.com/ipfs/go-ds-leveldb v0.4.0
 	github.com/ipfs/go-ds-measure v0.1.0
-	github.com/ipfs/go-filestore v0.0.3
+	github.com/ipfs/go-filestore v0.0.4-0.20200203163551-8cc45055f624
 	github.com/ipfs/go-fs-lock v0.0.4
-	github.com/ipfs/go-ipfs-blockstore v0.1.2
+	github.com/ipfs/go-ipfs-blockstore v0.1.4-0.20200202011011-451980be9248
 	github.com/ipfs/go-ipfs-chunker v0.0.3
 	github.com/ipfs/go-ipfs-cmds v0.1.1
 	github.com/ipfs/go-ipfs-config v0.2.0
@@ -45,6 +45,7 @@ require (
 	github.com/ipfs/go-ipld-git v0.0.3
 	github.com/ipfs/go-ipns v0.0.2
 	github.com/ipfs/go-log v1.0.1
+	github.com/ipfs/go-log/v2 v2.0.2 // indirect
 	github.com/ipfs/go-merkledag v0.3.1
 	github.com/ipfs/go-metrics-interface v0.0.1
 	github.com/ipfs/go-metrics-prometheus v0.0.2
@@ -89,7 +90,7 @@ require (
 	github.com/multiformats/go-multiaddr-dns v0.2.0
 	github.com/multiformats/go-multiaddr-net v0.1.1
 	github.com/multiformats/go-multibase v0.0.1
-	github.com/multiformats/go-multihash v0.0.10
+	github.com/multiformats/go-multihash v0.0.11
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.4.0
@@ -98,8 +99,13 @@ require (
 	github.com/whyrusleeping/go-sysinfo v0.0.0-20190219211824-4a357d4b90b1
 	github.com/whyrusleeping/multiaddr-filter v0.0.0-20160516205228-e903e4adabd7
 	github.com/whyrusleeping/tar-utils v0.0.0-20180509141711-8c6c8ba81d5c
+	go.uber.org/atomic v1.5.1 // indirect
 	go.uber.org/fx v1.10.0
+	go.uber.org/zap v1.13.0 // indirect
+	golang.org/x/crypto v0.0.0-20200128174031-69ecbb4d6d5d // indirect
+	golang.org/x/lint v0.0.0-20200130185559-910be7a94367 // indirect
 	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5
+	golang.org/x/tools v0.0.0-20200203175837-a014e0aa6a8b // indirect
 	gopkg.in/cheggaaa/pb.v1 v1.0.28
 )
 
