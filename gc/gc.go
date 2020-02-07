@@ -170,14 +170,6 @@ func Descendants(ctx context.Context, getLinks dag.GetLinks, set *multihash.Set,
 	return nil
 }
 
-// toCidV1 converts any CIDv0s to CIDv1s.
-func toCidV1(c cid.Cid) cid.Cid {
-	if c.Version() == 0 {
-		return cid.NewCidV1(c.Type(), c.Hash())
-	}
-	return c
-}
-
 // ColoredSet computes the set of nodes in the graph that are pinned by the
 // pins in the given pinner.
 func ColoredSet(ctx context.Context, pn pin.Pinner, ng ipld.NodeGetter, bestEffortRoots []cid.Cid, output chan<- Result) (*multihash.Set, error) {
