@@ -528,7 +528,9 @@ func (p *pinner) Update(ctx context.Context, from, to cid.Cid, unpin bool) error
 		return fmt.Errorf("'from' cid was not recursively pinned already")
 	}
 
+	p.lock.Unlock()
 	err := dagutils.DiffEnumerate(ctx, p.dserv, from, to)
+	p.lock.Lock()
 	if err != nil {
 		return err
 	}
