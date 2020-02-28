@@ -1,4 +1,4 @@
-FROM golang:1.13.6-buster
+FROM golang:1.14-buster
 LABEL maintainer="Steven Allen <steven@stebalien.com>"
 
 # Install deps
@@ -16,11 +16,15 @@ RUN cd $SRC_DIR \
 
 COPY . $SRC_DIR
 
+# Preload an in-tree but disabled-by-default plugin by adding it to the IPFS_PLUGINS variable
+# e.g. docker build --build-arg IPFS_PLUGINS="foo bar baz"
+ARG IPFS_PLUGINS
+
 # Build the thing.
 # Also: fix getting HEAD commit hash via git rev-parse.
 RUN cd $SRC_DIR \
   && mkdir .git/objects \
-  && make build GOTAGS=openssl
+  && make build GOTAGS=openssl IPFS_PLUGINS=$IPFS_PLUGINS
 
 # Get su-exec, a very minimal tool for dropping privileges,
 # and tini, a very minimal init daemon for containers
@@ -37,7 +41,7 @@ RUN set -x \
   && chmod +x tini
 
 # Now comes the actual target image, which aims to be as small as possible.
-FROM busybox:1.31.0-glibc
+FROM busybox:1.31.1-glibc
 LABEL maintainer="Steven Allen <steven@stebalien.com>"
 
 # Get the ipfs binary, entrypoint script, and TLS CAs from the build container.
