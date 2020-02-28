@@ -17,7 +17,6 @@ import (
 	logging "github.com/ipfs/go-log"
 	dag "github.com/ipfs/go-merkledag"
 	"github.com/ipfs/go-verifcid"
-	"github.com/multiformats/go-multihash"
 )
 
 var log = logging.Logger("gc")
@@ -27,6 +26,16 @@ var log = logging.Logger("gc")
 type Result struct {
 	KeyRemoved cid.Cid
 	Error      error
+}
+
+// converts a set of CIDs with different codecs to a set of CIDs with the raw codec.
+func toRawCids(set *cid.Set) *cid.Set {
+	newSet := cid.NewSet()
+	set.ForEach(func(c cid.Cid) error {
+		newSet.Add(cid.NewCidV1(cid.Raw, c.Hash()))
+		return nil
+	})
+	return newSet
 }
 
 // GC performs a mark and sweep garbage collection of the blocks in the blockstore
@@ -62,6 +71,14 @@ func GC(ctx context.Context, bs bstore.GCBlockstore, dstor dstore.Datastore, pn 
 			return
 		}
 
+		// The blockstore reports raw blocks. We need to remove the codecs from the CIDs.
+		gcs = toRawCids(gcs)
+		emark.Append(logging.LoggableMap{
+			"blackSetSize": fmt.Sprintf("%d", gcs.Len()),
+		})
+		emark.Done()
+		esweep := log.EventBegin(ctx, "GC.sweep")
+
 		keychan, err := bs.AllKeysChan(ctx)
 		if err != nil {
 			select {
@@ -81,8 +98,9 @@ func GC(ctx context.Context, bs bstore.GCBlockstore, dstor dstore.Datastore, pn 
 				if !ok {
 					break loop
 				}
-				// This means we keep the block as long as we want it somewhere (regardless of the type of CID that references it).
-				if !gcs.Has(k.Hash()) {
+				// NOTE: assumes that all CIDs returned by the keychan are _raw_ CIDv1 CIDs.
+				// This means we keep the block as long as we want it somewhere (CIDv1, CIDv0, Raw, other...).
+				if !gcs.Has(k) {
 					err := bs.DeleteBlock(k)
 					removed++
 					if err != nil {
@@ -134,7 +152,7 @@ func GC(ctx context.Context, bs bstore.GCBlockstore, dstor dstore.Datastore, pn 
 // Descendants recursively finds all the descendants of the given roots and
 // adds them to the given cid.Set, using the provided dag.GetLinks function
 // to walk the tree.
-func Descendants(ctx context.Context, getLinks dag.GetLinks, set *multihash.Set, roots []cid.Cid) error {
+func Descendants(ctx context.Context, getLinks dag.GetLinks, set *cid.Set, roots []cid.Cid) error {
 	verifyGetLinks := func(ctx context.Context, c cid.Cid) ([]*ipld.Link, error) {
 		err := verifcid.ValidateCid(c)
 		if err != nil {
@@ -158,7 +176,7 @@ func Descendants(ctx context.Context, getLinks dag.GetLinks, set *multihash.Set,
 	for _, c := range roots {
 		// Walk recursively walks the dag and adds the keys to the given set
 		err := dag.Walk(ctx, verifyGetLinks, c, func(k cid.Cid) bool {
-			return set.Visit(k.Hash())
+			return set.Visit(toCidV1(k))
 		}, dag.Concurrent())
 
 		if err != nil {
@@ -180,11 +198,11 @@ func toCidV1(c cid.Cid) cid.Cid {
 
 // ColoredSet computes the set of nodes in the graph that are pinned by the
 // pins in the given pinner.
-func ColoredSet(ctx context.Context, pn pin.Pinner, ng ipld.NodeGetter, bestEffortRoots []cid.Cid, output chan<- Result) (*multihash.Set, error) {
+func ColoredSet(ctx context.Context, pn pin.Pinner, ng ipld.NodeGetter, bestEffortRoots []cid.Cid, output chan<- Result) (*cid.Set, error) {
 	// KeySet currently implemented in memory, in the future, may be bloom filter or
 	// disk backed to conserve memory.
 	errors := false
-	gcs := multihash.NewSet()
+	gcs := cid.NewSet()
 	getLinks := func(ctx context.Context, cid cid.Cid) ([]*ipld.Link, error) {
 		links, err := ipld.GetLinks(ctx, ng, cid)
 		if err != nil {
@@ -238,7 +256,7 @@ func ColoredSet(ctx context.Context, pn pin.Pinner, ng ipld.NodeGetter, bestEffo
 		return nil, err
 	}
 	for _, k := range dkeys {
-		gcs.Add(k.Hash())
+		gcs.Add(toCidV1(k))
 	}
 
 	ikeys, err := pn.InternalPins(ctx)
