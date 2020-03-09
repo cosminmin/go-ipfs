@@ -48,11 +48,7 @@ test_pin() {
 
 
 test_init_ipfs
-
-# test runs much faster without daemon.
-# TODO: turn this back on after:
-# https://github.com/ipfs/go-ipfs/issues/1075
-# test_launch_ipfs_daemon
+test_launch_ipfs_daemon --offline
 
 HASH_FILE6="QmRsBC3Y2G6VRPYGAVpZczx1W7Xw54MtM1NcLKTkn6rx3U"
 HASH_FILE5="QmaN3PtyP8DcVGHi3Q2Fcp7CfAFVcVXKddWbHoNvaA41zf"
@@ -236,7 +232,6 @@ test_expect_success "some are no longer there" '
   test_must_fail ipfs ls "$HASH_DIR3"
 '
 
-test_launch_ipfs_daemon --offline
 test_expect_success "recursive pin fails without objects" '
   test_must_fail ipfs pin add -r "$HASH_DIR1" 2>err_expected8 &&
   grep "pin: merkledag: not found" err_expected8 ||
