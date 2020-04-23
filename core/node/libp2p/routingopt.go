@@ -22,6 +22,7 @@ func constructDHTRouting(mode dht.ModeOpt) func(ctx context.Context, host host.H
 			dht.Mode(mode),
 			dht.Datastore(dstore),
 			dht.Validator(validator),
+			dht.V1CompatibleMode(false),
 		)
 	}
 }
