@@ -46,6 +46,11 @@ const (
 	dhtVerboseOptionName = "verbose"
 )
 
+type queryEventWithMeta struct {
+	routing.QueryEvent
+	agentVersion string
+}
+
 var queryDhtCmd = &cmds.Command{
 	Helptext: cmds.HelpText{
 		Tagline:          "Find the closest Peer IDs to a given Peer ID by querying the DHT.",
@@ -178,7 +183,22 @@ var findProvidersDhtCmd = &cmds.Command{
 			}
 		}()
 		for e := range events {
-			if err := res.Emit(e); err != nil {
+			var av string
+			if e.ID != "" {
+				val, _ := n.PeerHost.Peerstore().Get(e.ID, "AgentVersion")
+				av = fmt.Sprint(val)
+				fmt.Println("found agent", e.Type, av)
+			}
+			qem := queryEventWithMeta{
+				QueryEvent: routing.QueryEvent{
+					ID:        e.ID,
+					Type:      e.Type,
+					Responses: e.Responses,
+					Extra:     e.Extra,
+				},
+				agentVersion: fmt.Sprint(av),
+			}
+			if err := res.Emit(&qem); err != nil {
 				return err
 			}
 		}
@@ -186,15 +206,15 @@ var findProvidersDhtCmd = &cmds.Command{
 		return nil
 	},
 	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, out *routing.QueryEvent) error {
-			pfm := pfuncMap{
-				routing.FinalPeer: func(obj *routing.QueryEvent, out io.Writer, verbose bool) error {
+		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, out *queryEventWithMeta) error {
+			pfm := pEventWithMetaFuncMap{
+				routing.FinalPeer: func(obj *queryEventWithMeta, out io.Writer, verbose bool) error {
 					if verbose {
 						fmt.Fprintf(out, "* closest peer %s\n", obj.ID)
 					}
 					return nil
 				},
-				routing.Provider: func(obj *routing.QueryEvent, out io.Writer, verbose bool) error {
+				routing.Provider: func(obj *queryEventWithMeta, out io.Writer, verbose bool) error {
 					prov := obj.Responses[0]
 					if verbose {
 						fmt.Fprintf(out, "provider: ")
@@ -210,10 +230,10 @@ var findProvidersDhtCmd = &cmds.Command{
 			}
 
 			verbose, _ := req.Options[dhtVerboseOptionName].(bool)
-			return printEvent(out, w, verbose, pfm)
+			return printEventWithMeta(out, w, verbose, pfm)
 		}),
 	},
-	Type: routing.QueryEvent{},
+	Type: queryEventWithMeta{},
 }
 
 const (
@@ -648,6 +668,60 @@ func printEvent(obj *routing.QueryEvent, out io.Writer, verbose bool, override p
 	case routing.PeerResponse:
 		if verbose {
 			fmt.Fprintf(out, "* %s says use ", obj.ID)
+			for _, p := range obj.Responses {
+				fmt.Fprintf(out, "%s ", p.ID)
+			}
+			fmt.Fprintln(out)
+		}
+	case routing.QueryError:
+		if verbose {
+			fmt.Fprintf(out, "error: %s\n", obj.Extra)
+		}
+	case routing.DialingPeer:
+		if verbose {
+			fmt.Fprintf(out, "dialing peer: %s\n", obj.ID)
+		}
+	case routing.AddingPeer:
+		if verbose {
+			fmt.Fprintf(out, "adding peer to query: %s\n", obj.ID)
+		}
+	case routing.FinalPeer:
+	default:
+		if verbose {
+			fmt.Fprintf(out, "unrecognized event type: %d\n", obj.Type)
+		}
+	}
+	return nil
+}
+
+type printEventWithMetaFunc func(obj *queryEventWithMeta, out io.Writer, verbose bool) error
+type pEventWithMetaFuncMap map[routing.QueryEventType]printEventWithMetaFunc
+
+func printEventWithMeta(obj *queryEventWithMeta, out io.Writer, verbose bool, override pEventWithMetaFuncMap) error {
+	if verbose {
+		fmt.Fprintf(out, "%s: ", time.Now().Format("15:04:05.000"))
+	}
+
+	if override != nil {
+		if pf, ok := override[obj.Type]; ok {
+			return pf(obj, out, verbose)
+		}
+	}
+
+	switch obj.Type {
+	case routing.SendingQuery:
+		if verbose {
+			fmt.Fprintf(out, "* querying %s (%v)\n", obj.ID, obj.agentVersion)
+		}
+	case routing.Value:
+		if verbose {
+			fmt.Fprintf(out, "got value: '%s'\n", obj.Extra)
+		} else {
+			fmt.Fprint(out, obj.Extra)
+		}
+	case routing.PeerResponse:
+		if verbose {
+			fmt.Fprintf(out, "* %s (%v) says use ", obj.ID, obj.agentVersion)
 			for _, p := range obj.Responses {
 				fmt.Fprintf(out, "%s ", p.ID)
 			}
