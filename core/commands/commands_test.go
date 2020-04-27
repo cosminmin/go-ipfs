@@ -106,6 +106,7 @@ func TestCommands(t *testing.T) {
 		"/dht/provide",
 		"/dht/put",
 		"/dht/query",
+		"/dht/stat",
 		"/diag",
 		"/diag/cmds",
 		"/diag/cmds/clear",
