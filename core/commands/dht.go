@@ -47,8 +47,11 @@ const (
 )
 
 type queryEventWithMeta struct {
-	routing.QueryEvent
-	agentVersion string
+	ID           peer.ID
+	Type         routing.QueryEventType
+	Responses    []*peer.AddrInfo
+	Extra        string
+	AgentVersion string
 }
 
 var queryDhtCmd = &cmds.Command{
@@ -190,13 +193,11 @@ var findProvidersDhtCmd = &cmds.Command{
 				fmt.Println("found agent", e.Type, av)
 			}
 			qem := queryEventWithMeta{
-				QueryEvent: routing.QueryEvent{
-					ID:        e.ID,
-					Type:      e.Type,
-					Responses: e.Responses,
-					Extra:     e.Extra,
-				},
-				agentVersion: fmt.Sprint(av),
+				ID:           e.ID,
+				Type:         e.Type,
+				Responses:    e.Responses,
+				Extra:        e.Extra,
+				AgentVersion: fmt.Sprint(av),
 			}
 			if err := res.Emit(&qem); err != nil {
 				return err
@@ -711,7 +712,7 @@ func printEventWithMeta(obj *queryEventWithMeta, out io.Writer, verbose bool, ov
 	switch obj.Type {
 	case routing.SendingQuery:
 		if verbose {
-			fmt.Fprintf(out, "* querying %s (%v)\n", obj.ID, obj.agentVersion)
+			fmt.Fprintf(out, "* querying %s (%v)\n", obj.ID, obj.AgentVersion)
 		}
 	case routing.Value:
 		if verbose {
@@ -721,7 +722,7 @@ func printEventWithMeta(obj *queryEventWithMeta, out io.Writer, verbose bool, ov
 		}
 	case routing.PeerResponse:
 		if verbose {
-			fmt.Fprintf(out, "* %s (%v) says use ", obj.ID, obj.agentVersion)
+			fmt.Fprintf(out, "* %s (%v) says use ", obj.ID, obj.AgentVersion)
 			for _, p := range obj.Responses {
 				fmt.Fprintf(out, "%s ", p.ID)
 			}
