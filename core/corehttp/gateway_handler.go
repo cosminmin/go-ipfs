@@ -108,7 +108,11 @@ func parseIpfsPath(p string) (cid.Cid, string, error) {
 
 func (i *gatewayHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// the hour is a hard fallback, we don't expect it to happen, but just in case
-	ctx, cancel := context.WithTimeout(r.Context(), time.Hour)
+	timeout := time.Hour
+	if os.Getenv("IPFS_GATEWAY_TIMEOUT") != "" {
+		timeout, _ = time.ParseDuration(os.Getenv("IPFS_GATEWAY_TIMEOUT"))
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), timeout)
 	defer cancel()
 	r = r.WithContext(ctx)
 
