@@ -380,7 +380,7 @@ workflows:
     - docker-build
     - docker-push:
         # Requires dockerhub credentials, from circleci context.
-        context: dockerhub
+        # context: dockerhub
         requires:
           - docker-build
           - golint
