@@ -58,7 +58,7 @@ require (
 	github.com/ipfs/go-unixfs v0.2.4
 	github.com/ipfs/go-verifcid v0.0.1
 	github.com/ipfs/interface-go-ipfs-core v0.4.0
-	github.com/ipld/go-car v0.1.1-0.20201015032735-ff6ccdc46acc
+	github.com/ipld/go-car v0.2.1-0.20210308124829-cb192ce583f4
 	github.com/jbenet/go-is-domain v1.0.5
 	github.com/jbenet/go-random v0.0.0-20190219211222-123a90aedc0c
 	github.com/jbenet/go-temp-err-catcher v0.1.0
@@ -113,7 +113,7 @@ require (
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
 	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
-	golang.org/x/sys v0.0.0-20210305034016-7844c3c200c3
+	golang.org/x/sys v0.0.0-20210305230114-8fe3ee5dd75b
 )
 
 go 1.14
