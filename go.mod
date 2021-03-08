@@ -5,6 +5,7 @@ require (
 	contrib.go.opencensus.io/exporter/prometheus v0.2.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/bren2010/proquint v0.0.0-20160323162903-38337c27106d
+	github.com/btcsuite/btcd v0.21.0-beta // indirect
 	github.com/cheggaaa/pb v1.0.29
 	github.com/coreos/go-systemd/v22 v22.1.0
 	github.com/dustin/go-humanize v1.0.0
@@ -29,7 +30,7 @@ require (
 	github.com/ipfs/go-ds-measure v0.1.0
 	github.com/ipfs/go-filestore v1.0.0
 	github.com/ipfs/go-fs-lock v0.0.6
-	github.com/ipfs/go-graphsync v0.6.1-0.20210212001456-cdabeba80fe0
+	github.com/ipfs/go-graphsync v0.7.1-0.20210308174814-65b969778be6
 	github.com/ipfs/go-ipfs-blockstore v1.0.3
 	github.com/ipfs/go-ipfs-chunker v0.0.5
 	github.com/ipfs/go-ipfs-cmds v0.6.0
@@ -66,7 +67,7 @@ require (
 	github.com/libp2p/go-libp2p v0.13.0
 	github.com/libp2p/go-libp2p-circuit v0.4.0
 	github.com/libp2p/go-libp2p-connmgr v0.2.4
-	github.com/libp2p/go-libp2p-core v0.8.0
+	github.com/libp2p/go-libp2p-core v0.8.5
 	github.com/libp2p/go-libp2p-discovery v0.5.0
 	github.com/libp2p/go-libp2p-http v0.2.0
 	github.com/libp2p/go-libp2p-kad-dht v0.11.1
@@ -113,7 +114,7 @@ require (
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
 	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
-	golang.org/x/sys v0.0.0-20210305230114-8fe3ee5dd75b
+	golang.org/x/sys v0.0.0-20210308170721-88b6017d0656
 )
 
 go 1.14
