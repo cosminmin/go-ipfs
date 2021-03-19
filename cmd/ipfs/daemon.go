@@ -319,9 +319,9 @@ func daemonFunc(req *cmds.Request, re cmds.ResponseEmitter, env cmds.Environment
 
 	// Start assembling node config
 	ncfg := &core.BuildCfg{
-		Repo:                        repo,
-		Permanent:                   true, // It is temporary way to signify that node is permanent
-		Online:                      !offline,
+		Repo:      repo,
+		Permanent: true, // It is temporary way to signify that node is permanent
+		Online:    !offline,
 		DisableEncryptedConnections: unencrypted,
 		ExtraOpts: map[string]bool{
 			"pubsub": pubsub,
@@ -675,6 +675,10 @@ func serveHTTPGateway(req *cmds.Request, cctx *oldcmds.Context) (<-chan error, e
 
 	if len(cfg.Gateway.RootRedirect) > 0 {
 		opts = append(opts, corehttp.RedirectOption("", cfg.Gateway.RootRedirect))
+	}
+
+	if len(cfg.Gateway.PathPrefixes) > 0 {
+		log.Error("Support for X-Ipfs-Gateway-Prefix and Gateway.PathPrefixes is deprecated and will be removed in the next release: https://github.com/ipfs/go-ipfs/issues/7702")
 	}
 
 	node, err := cctx.ConstructNode()
